@@ -4,6 +4,7 @@ import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.yu.entity.FileInfo;
+import com.yu.util.ExportExcelUtil;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -89,7 +90,12 @@ public class FileController {
         return "redirect:/";
     }
 
-    @GetMapping("/export")
+    /**
+     * 使用easyExcel导出
+     * @param response
+     * @throws Exception
+     */
+    /*@GetMapping("/export")
     public void export(HttpServletResponse response) throws IOException {
         ExcelWriter writer = null;
         OutputStream outputStream = response.getOutputStream();
@@ -126,6 +132,22 @@ public class FileController {
             }
         }
 
+    }*/
+
+    /**
+     * 使用poi工具类导出
+     * @param response
+     * @throws Exception
+     */
+    @GetMapping("/export")
+    public void export(HttpServletResponse response) throws Exception {
+        OutputStream outputStream = response.getOutputStream();
+        //添加响应头信息
+        response.setHeader("Content-disposition", "attachment; filename=" + "files.xls");
+        response.setContentType("application/msexcel;charset=UTF-8");//设置类型
+        TreeSet<FileInfo> fileInfos = getFileInfos(new File(filePath).listFiles());
+        ExportExcelUtil<FileInfo> exportExcelUtil = new ExportExcelUtil<>(new ArrayList<>(fileInfos), outputStream);
+        exportExcelUtil.export();
     }
 
     @GetMapping("/download")

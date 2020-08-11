@@ -4,17 +4,17 @@
     <meta charset="utf-8">
     <title>文件共享</title>
 </head>
-<body>
+<body bgcolor="#a9a9a9">
 <form action='http://localhost:8080/upload' method='post' enctype='multipart/form-data'>
     <input type='file' name='files' multiple>
     <button type='submit'>上传</button>
 </form>
 <hr>
 <div id="fileInfo">
-    <div th:text="'已有'+${fileNum}+'个文件，当前文件所在目录：'+${filePath}"></div>
-    <div th:text="'最大空间'+${maxSpace}+'MB'"></div>
-    <div th:text="'已用空间'+${usedSpace}+'MB'"></div>
-    <div th:text="'可用空间'+${remainSpace}+'MB'"></div>
+    <div th:text="'当前有'+${fileNum}+'个文件，文件所在目录： '+${filePath}"></div>
+    <div th:text="'最大可用空间'+${maxSpace}+'MB'"></div>
+    <div th:text="'已使用空间'+${usedSpace}+'MB'"></div>
+    <div th:text="'剩余可用空间'+${remainSpace}+'MB'"></div>
     <div>
         <span th:text="'空间使用率'+${spaceUsageRate}+'%'"></span>
         <canvas th:if="${spaceUsageRate}&lt;0.6" width="35" height="20" style="background-color: greenyellow"></canvas>
