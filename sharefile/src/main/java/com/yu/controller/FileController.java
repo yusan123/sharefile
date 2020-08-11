@@ -130,6 +130,7 @@ public class FileController {
 
         model.addAttribute("fileNum", files.length);
         model.addAttribute("usedSpace", getUsedSpace(file));
+        model.addAttribute("maxSpace", maxSpace);
         model.addAttribute("remainSpace", getRemainSpace(file));
         model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
         model.addAttribute("files", data);

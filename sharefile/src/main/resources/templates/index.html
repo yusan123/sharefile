@@ -11,16 +11,28 @@
 </form>
 <hr>
 <div id="fileInfo">
-    <p th:text="'已有'+${fileNum}+'个文件'"></p>
-    <p th:text="'已用空间'+${usedSpace}+'MB'"></p>
-    <p th:text="'可用空间'+${remainSpace}+'MB'"></p>
-    <p th:text="'空间使用率'+${spaceUsageRate}+'%'"></p>
-    <div th:each="f: ${files}">
-        <a href="/" th:href="@{/download(fileName=${f.getFileName()})}">[[${f.getFileName()}]]</a>
-        <span th:text="${f.getSize()}+'MB'"></span>
-        <span th:text="${f.getTime()}"></span>
-        <a href="" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a>
-    </div>
+    <div th:text="'已有'+${fileNum}+'个文件'"></div>
+    <div th:text="'最大空间'+${maxSpace}+'MB'"></div>
+    <div th:text="'已用空间'+${usedSpace}+'MB'"></div>
+    <div th:text="'可用空间'+${remainSpace}+'MB'"></div>
+    <div th:text="'空间使用率'+${spaceUsageRate}+'%'"></div>
+    <hr>
+    <table border="0">
+        <tr>
+            <th>fileName</th>
+            <th>fileSize</th>
+            <th>uploadtime</th>
+            <th>delete</th>
+            <th>download</th>
+        </tr>
+        <tr th:each="f: ${files}">
+            <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">[[${f.getFileName()}]]</a></td>
+            <td><span th:text="${f.getSize()}+'MB'"></span></td>
+            <td><span th:text="${f.getTime()}"></span></td>
+            <td><a href="/" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a></td>
+            <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">下载</a></td>
+        </tr>
+    </table>
 </div>
 </body>
 </html>
