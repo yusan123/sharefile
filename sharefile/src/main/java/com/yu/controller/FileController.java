@@ -1,5 +1,8 @@
 package com.yu.controller;
 
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.metadata.Sheet;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import com.yu.entity.FileInfo;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.UUID;
 
@@ -85,6 +89,44 @@ public class FileController {
         return "redirect:/";
     }
 
+    @GetMapping("/export")
+    public void export(HttpServletResponse response) throws IOException {
+        ExcelWriter writer = null;
+        OutputStream outputStream = response.getOutputStream();
+        try {
+            //添加响应头信息
+            response.setHeader("Content-disposition", "attachment; filename=" + "files.xls");
+            response.setContentType("application/msexcel;charset=UTF-8");//设置类型
+            response.setHeader("Pragma", "No-cache");//设置头
+            response.setHeader("Cache-Control", "no-cache");//设置头
+            response.setDateHeader("Expires", 0);//设置日期头
+
+            //实例化 ExcelWriter
+            writer = new ExcelWriter(outputStream, ExcelTypeEnum.XLS, true);
+
+            //实例化表单
+            Sheet sheet = new Sheet(1, 0, FileInfo.class);
+            sheet.setSheetName("目录");
+
+            //获取数据
+            File[] files = new File(filePath).listFiles();
+            TreeSet<FileInfo> fileInfos = getFileInfos(files);
+
+            //输出
+            writer.write(new ArrayList<>(fileInfos), sheet);
+            writer.finish();
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                response.getOutputStream().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
     @GetMapping("/download")
     public void download(@RequestParam String fileName, HttpServletResponse response) throws Exception {
@@ -121,15 +163,7 @@ public class FileController {
         }
         File[] files = file.listFiles();
 
-        TreeSet<FileInfo> data = new TreeSet<>();
-        for (File f : files) {
-            FileInfo fileInfo = new FileInfo();
-            fileInfo.setFileName(f.getName());
-            fileInfo.setSize(DataSize.ofBytes(f.length()).toMegabytes());
-            fileInfo.setTimestamp(f.lastModified());
-            fileInfo.setTime(formatTime(f.lastModified()));
-            data.add(fileInfo);
-        }
+        TreeSet<FileInfo> data = getFileInfos(files);
 
         model.addAttribute("fileNum", files.length);
         model.addAttribute("filePath", filePath);
@@ -139,6 +173,19 @@ public class FileController {
         model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
         model.addAttribute("files", data);
         return "index";
+    }
+
+    private TreeSet<FileInfo> getFileInfos(File[] files) {
+        TreeSet<FileInfo> data = new TreeSet<>();
+        for (File f : files) {
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setFileName(f.getName());
+            fileInfo.setSize(DataSize.ofBytes(f.length()).toMegabytes());
+            fileInfo.setTimestamp(f.lastModified());
+            fileInfo.setTime(formatTime(f.lastModified()));
+            data.add(fileInfo);
+        }
+        return data;
     }
 
     /**

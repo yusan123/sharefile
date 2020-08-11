@@ -33,6 +33,12 @@
             <artifactId>lombok</artifactId>
             <version>1.16.14</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>easyexcel</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
 
     <build>
