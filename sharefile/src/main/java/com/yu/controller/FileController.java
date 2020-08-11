@@ -1,5 +1,6 @@
 package com.yu.controller;
 
+import com.yu.entity.FileInfo;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -16,10 +17,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.List;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.TreeSet;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 public class FileController {
@@ -31,6 +34,7 @@ public class FileController {
     @Value("${file.maxSpace:10240}")
     private long maxSpace;
 
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private void upload(MultipartFile file) {
 
@@ -113,13 +117,33 @@ public class FileController {
     public String listFiles(Model model) {
         File file = new File(filePath);
         File[] files = file.listFiles();
-        List<String> list = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
-        model.addAttribute("fileNum", list.size());
+
+        TreeSet<FileInfo> data = new TreeSet<>();
+        for (File f : files) {
+            FileInfo fileInfo = new FileInfo();
+            fileInfo.setFileName(f.getName());
+            fileInfo.setSize(DataSize.ofBytes(f.length()).toMegabytes());
+            fileInfo.setTimestamp(f.lastModified());
+            fileInfo.setTime(formatTime(f.lastModified()));
+            data.add(fileInfo);
+        }
+
+        model.addAttribute("fileNum", files.length);
         model.addAttribute("usedSpace", getUsedSpace(file));
         model.addAttribute("remainSpace", getRemainSpace(file));
         model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
-        model.addAttribute("fileList", list);
+        model.addAttribute("files", data);
         return "index";
+    }
+
+    /**
+     * 时间戳转换为时间
+     *
+     * @param timeStamp
+     * @return
+     */
+    private String formatTime(long timeStamp) {
+        return dateTimeFormatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeStamp), ZoneId.systemDefault()));
     }
 
     /**
