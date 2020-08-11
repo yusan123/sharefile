@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>文件上传和下载</title>
+</head>
+<body>
+<form action='http://localhost:8080/upload' method='post' enctype='multipart/form-data'>
+    <input type='file' name='files' multiple>
+    <button type='submit'>上传</button>
+</form>
+<hr>
+<div id="fileInfo">
+    <p th:text="'共有'+${size}+'个文件'"></p>
+    <div th:each="file: ${fileList}">
+        <a href="/" th:href="@{/download(fileName=${file})}">[[${file}]]</a> <a href="" th:href="@{/delete(fileName=${file})}">删除</a>
+    </div>
+</div>
+</body>
+</html>

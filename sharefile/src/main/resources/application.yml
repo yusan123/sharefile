@@ -1,0 +1,21 @@
+server:
+  port: 8080
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 1000MB
+      max-request-size: 10000MB
+      #location: E:/upload/
+  thymeleaf:
+    cache: false
+  mvc:
+    view:
+      suffix: .html
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/templates/,classpath:/static/
+
+
+file:
+  path: E:/upload/
