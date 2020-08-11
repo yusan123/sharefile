@@ -116,6 +116,9 @@ public class FileController {
     @GetMapping("/")
     public String listFiles(Model model) {
         File file = new File(filePath);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
         File[] files = file.listFiles();
 
         TreeSet<FileInfo> data = new TreeSet<>();
@@ -129,6 +132,7 @@ public class FileController {
         }
 
         model.addAttribute("fileNum", files.length);
+        model.addAttribute("filePath", filePath);
         model.addAttribute("usedSpace", getUsedSpace(file));
         model.addAttribute("maxSpace", maxSpace);
         model.addAttribute("remainSpace", getRemainSpace(file));

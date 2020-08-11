@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
-    <title>文件上传和下载</title>
+    <title>文件共享</title>
 </head>
 <body>
 <form action='http://localhost:8080/upload' method='post' enctype='multipart/form-data'>
@@ -11,11 +11,20 @@
 </form>
 <hr>
 <div id="fileInfo">
-    <div th:text="'已有'+${fileNum}+'个文件'"></div>
+    <div th:text="'已有'+${fileNum}+'个文件，当前文件所在目录：'+${filePath}"></div>
     <div th:text="'最大空间'+${maxSpace}+'MB'"></div>
     <div th:text="'已用空间'+${usedSpace}+'MB'"></div>
     <div th:text="'可用空间'+${remainSpace}+'MB'"></div>
-    <div th:text="'空间使用率'+${spaceUsageRate}+'%'"></div>
+    <div>
+        <span th:text="'空间使用率'+${spaceUsageRate}+'%'"></span>
+        <canvas th:if="${spaceUsageRate}&lt;0.6" width="35" height="20" style="background-color: greenyellow"></canvas>
+        <canvas th:if="${spaceUsageRate}&gt;0.6 and ${spaceUsageRate}&lt;0.9" width="35" height="20"
+                style="background-color: yellow"></canvas>
+        <canvas th:if="${spaceUsageRate}&gt;0.9" width="35" height="20" style="background-color: red"></canvas>
+    </div>
+    <div>
+        <a href="#" th:href="@{/export}">导出文件列表</a>
+    </div>
     <hr>
     <table border="0">
         <tr>
