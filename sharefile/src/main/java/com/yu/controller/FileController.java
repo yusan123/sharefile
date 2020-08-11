@@ -6,6 +6,8 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import com.yu.entity.FileInfo;
 import com.yu.util.ExportExcelUtil;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -34,6 +36,8 @@ public class FileController {
 
     @Value("${file.path}")
     private String filePath;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
 
     //如果不配置默认10G
     @Value("${file.maxSpace:10240}")
@@ -136,6 +140,7 @@ public class FileController {
 
     /**
      * 使用poi工具类导出
+     *
      * @param response
      * @throws Exception
      */
@@ -152,14 +157,16 @@ public class FileController {
 
     @GetMapping("/download")
     public void download(@RequestParam String fileName, HttpServletResponse response) throws Exception {
+        LOGGER.info("begin download file:" + fileName);
         // 文件地址，真实环境是存放在数据库中的
         File file = new File(filePath, fileName);
         // 穿件输入对象
         FileInputStream fis = new FileInputStream(file);
         // 设置相关格式
-        response.setContentType("application/force-download");
+        //response.setContentType("application/force-download");
+        response.setContentType("application/octet-stream");
         // 设置下载后的文件名以及header
-        response.addHeader("Content-disposition", "attachment;fileName=" + fileName);
+        response.addHeader("Content-disposition", "attachment;fileName=" + new String(fileName.getBytes(), "utf-8"));
         // 创建输出对象
         OutputStream os = response.getOutputStream();
         // 常规操作
@@ -258,8 +265,8 @@ public class FileController {
      */
     @GetMapping("/delete")
     public String delFile(@RequestParam String fileName) {
-        File file = new File(filePath + fileName);
-        file.delete();
+        File file = new File(filePath, fileName);
+        boolean delete = file.delete();
         return "redirect:/";
     }
 }
