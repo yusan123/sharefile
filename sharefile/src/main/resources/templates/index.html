@@ -11,7 +11,10 @@
 </form>
 <hr>
 <div id="fileInfo">
-    <p th:text="'共有'+${size}+'个文件'"></p>
+    <p th:text="'已有'+${fileNum}+'个文件'"></p>
+    <p th:text="'已用空间'+${usedSpace}+'MB'"></p>
+    <p th:text="'可用空间'+${remainSpace}+'MB'"></p>
+    <p th:text="'空间使用率'+${spaceUsageRate}+'%'"></p>
     <div th:each="file: ${fileList}">
         <a href="/" th:href="@{/download(fileName=${file})}">[[${file}]]</a> <a href="" th:href="@{/delete(fileName=${file})}">删除</a>
     </div>

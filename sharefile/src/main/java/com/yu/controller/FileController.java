@@ -1,14 +1,15 @@
 package com.yu.controller;
 
-import com.sun.jmx.snmp.SnmpUnknownModelLcdException;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.util.IdGenerator;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.util.unit.DataSize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -26,42 +27,56 @@ public class FileController {
     @Value("${file.path}")
     private String filePath;
 
-    //@Value("${spring.servlet.multipart.location}")
-    private String filePath1;
+    //如果不配置默认10G
+    @Value("${file.maxSpace:10240}")
+    private long maxSpace;
 
-    private String upload(MultipartFile file) {
+
+    private void upload(MultipartFile file) {
+
+        //判断剩余空间是否可以存储
+        if (DataSize.ofBytes(file.getSize()).toMegabytes() > getRemainSpace(new File(filePath))) {
+            throw new RuntimeException("剩余空间不足，请联系管理员处理！");
+        }
 
         // 获取原始名字
-        String fileName = file.getOriginalFilename();
-        // 获取后缀名
-        String suffixName = fileName.substring(fileName.lastIndexOf("."));
-        System.out.println(suffixName);
-        // 文件重命名，防止重复
-        String pureName = fileName.substring(0, fileName.lastIndexOf("."));
-        System.out.println(pureName);
-        fileName = filePath + pureName + "_" + UUID.randomUUID().toString().replaceAll("-", "") + suffixName;
-        // 文件对象
-        File dest = new File(fileName);
-        // 判断路径是否存在，如果不存在则创建
-        if (!dest.getParentFile().exists()) {
-            dest.getParentFile().mkdirs();
-        }
+        String oldFileName = file.getOriginalFilename();
+        //处理文件名
+        String newFileName = dealFileName(oldFileName);
         try {
             // 保存到服务器中
-            file.transferTo(dest);
-            return fileName + "上传成功" + System.lineSeparator();
+            file.transferTo(new File(filePath, newFileName));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return fileName + "上传失败" + System.lineSeparator();
+    }
+
+    private String dealFileName(String fileName) {
+        if (fileName.length() > 100) {
+            fileName = fileName.substring(0, 100);
+        }
+        File file = new File(filePath, fileName);
+        if (file.exists()) {
+            // 获取后缀名
+            String suffixName = fileName.substring(fileName.lastIndexOf("."));
+            // 获取文件名
+            String pureName = fileName.substring(0, fileName.lastIndexOf("."));
+            fileName = pureName + "_"
+                    + UUID.randomUUID().toString().replaceAll("-", "") + suffixName;
+        }
+        return fileName;
     }
 
     @PostMapping("/upload")
-    public String upload(@RequestParam("files") MultipartFile[] files) {
-        StringBuilder sb = new StringBuilder("上传结果：" + System.lineSeparator());
-
-        for (MultipartFile file : files) {
-            sb.append(upload(file));
+    public String upload(@RequestParam("files") MultipartFile[] files, Model model) {
+        try {
+            for (MultipartFile file : files) {
+                upload(file);
+            }
+        } catch (Exception e) {
+            model.addAttribute("errMsg", e.getMessage());
+            //e.printStackTrace();
+            return "err";
         }
         return "redirect:/";
     }
@@ -88,16 +103,61 @@ public class FileController {
         }
     }
 
+    /**
+     * 展示文件列表及统计信息
+     *
+     * @param model
+     * @return
+     */
     @GetMapping("/")
     public String listFiles(Model model) {
         File file = new File(filePath);
         File[] files = file.listFiles();
         List<String> list = Arrays.stream(files).map(File::getName).collect(Collectors.toList());
-        model.addAttribute("size", list.size());
+        model.addAttribute("fileNum", list.size());
+        model.addAttribute("usedSpace", getUsedSpace(file));
+        model.addAttribute("remainSpace", getRemainSpace(file));
+        model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
         model.addAttribute("fileList", list);
         return "index";
     }
 
+    /**
+     * 计算已使用的空间
+     *
+     * @return
+     */
+    private long getUsedSpace(File file) {
+        DataSize dataSize = DataSize.ofBytes(FileUtils.sizeOfDirectory(file));
+        return dataSize.toMegabytes();
+    }
+
+    /**
+     * 计算空间使用率
+     *
+     * @return
+     */
+    private double getSpaceUsageRate(File file) {
+        return Double.longBitsToDouble(getUsedSpace(file)) / Double.longBitsToDouble(maxSpace);
+    }
+
+
+    /**
+     * 计算剩余空间
+     *
+     * @return
+     */
+    private long getRemainSpace(File file) {
+        return Math.subtractExact(maxSpace, getUsedSpace(file));
+    }
+
+
+    /**
+     * 删除文件
+     *
+     * @param fileName
+     * @return
+     */
     @GetMapping("/delete")
     public String delFile(@RequestParam String fileName) {
         File file = new File(filePath + fileName);
