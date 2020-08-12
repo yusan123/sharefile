@@ -2,6 +2,7 @@ package com.yu.controller;
 
 import com.yu.entity.FileInfo;
 import com.yu.util.ExportExcelUtil;
+import com.yu.util.FileToZip;
 import com.yu.util.ThreadPoolUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ public class FileController {
     @Value("${file.path}")
     private String filePath;
 
+    private static final String SHAREFILE = "sharefile";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private StopWatch stopWatch = new StopWatch();
     //如果不配置默认10G
@@ -72,11 +74,38 @@ public class FileController {
         }
     }
 
+    /**
+     * 删除所有文件，重要！！需要管理员权限
+     *
+     * @param model
+     * @return
+     * @throws IOException
+     */
     @GetMapping("/delAll")
     public String delAll(Model model) throws IOException {
         File file = new File(filePath);
         FileUtils.cleanDirectory(file);
         return "redirect:/";
+    }
+
+    @GetMapping("/downloadAll")
+    public void downloadAllZip(HttpServletResponse response) throws IOException {
+
+        String tmpZipPath = filePath + "/tmp/";
+        File tempPath = new File(tmpZipPath);
+        if (!tempPath.exists()) {
+            tempPath.mkdirs();
+        }
+        //压缩的过程
+        boolean zipRes = FileToZip.fileToZip(filePath, tmpZipPath, SHAREFILE);
+
+        if (zipRes) {
+            String zipFileName = SHAREFILE + ".zip";
+            File file = new File(tmpZipPath, zipFileName);
+            downloadFile(zipFileName, response, file);
+        }
+        //下载完成后清理临时数据
+        FileUtils.cleanDirectory(tempPath);
     }
 
     private String dealFileName(String fileName) {
@@ -214,6 +243,10 @@ public class FileController {
         LOGGER.info("begin download file:" + fileName);
         // 文件地址，真实环境是存放在数据库中的
         File file = new File(filePath, fileName);
+        downloadFile(fileName, response, file);
+    }
+
+    private void downloadFile(String fileName, HttpServletResponse response, File file) throws IOException {
         // 穿件输入对象
         FileInputStream fis = new FileInputStream(file);
         // 设置相关格式
@@ -258,6 +291,10 @@ public class FileController {
     private TreeSet<FileInfo> getFileInfos(File[] files) {
         TreeSet<FileInfo> data = new TreeSet<>();
         for (File f : files) {
+            //不展示文件夹
+            if (f.isDirectory()) {
+                continue;
+            }
             FileInfo fileInfo = new FileInfo();
             fileInfo.setFileName(f.getName());
             fileInfo.setSize(DataSize.ofBytes(f.length()).toMegabytes());

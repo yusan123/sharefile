@@ -50,6 +50,10 @@ public final class FileToZip {
                         zos = new ZipOutputStream(new BufferedOutputStream(fos));
                         byte[] bufs = new byte[1024 * 10];
                         for (int i = 0; i < sourceFiles.length; i++) {
+                            //不压缩文件夹
+                            if (sourceFiles[i].isDirectory()) {
+                                continue;
+                            }
                             // 创建ZIP实体,并添加进压缩包
                             ZipEntry zipEntry = new ZipEntry(sourceFiles[i].getName());
                             zos.putNextEntry(zipEntry);
@@ -73,8 +77,10 @@ public final class FileToZip {
             } finally {
                 // 关闭流
                 try {
+                    if (null != fis) fis.close();
                     if (null != bis) bis.close();
                     if (null != zos) zos.close();
+                    if (null != fos) fos.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     throw new RuntimeException(e);
