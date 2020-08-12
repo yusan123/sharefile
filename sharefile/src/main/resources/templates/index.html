@@ -9,6 +9,7 @@
     <input type='file' name='files' multiple>
     <button type='submit'>上传</button>
 </form>
+<!--<div th:text="'本次上传共耗时'+${time}+'s'"></div>-->
 <hr>
 <div id="fileInfo">
     <div th:text="'当前有'+${fileNum}+'个文件，文件所在目录： '+${filePath}"></div>
@@ -17,13 +18,16 @@
     <div th:text="'剩余可用空间'+${remainSpace}+'MB'"></div>
     <div>
         <span th:text="'空间使用率'+${spaceUsageRate}+'%'"></span>
-        <canvas th:if="${spaceUsageRate}&lt;0.6" width="35" height="20" style="background-color: greenyellow"></canvas>
-        <canvas th:if="${spaceUsageRate}&gt;0.6 and ${spaceUsageRate}&lt;0.9" width="35" height="20"
+        <canvas th:if="${spaceUsageRate}&lt;60" width="35" height="20" style="background-color: greenyellow"></canvas>
+        <canvas th:if="${spaceUsageRate}&gt;60 and ${spaceUsageRate}&lt;90" width="35" height="20"
                 style="background-color: yellow"></canvas>
-        <canvas th:if="${spaceUsageRate}&gt;0.9" width="35" height="20" style="background-color: red"></canvas>
+        <canvas th:if="${spaceUsageRate}&gt;90" width="35" height="20" style="background-color: red"></canvas>
     </div>
     <div>
         <a href="#" th:href="@{/export}">导出文件列表</a>
+    </div>
+    <div>
+        <a href="#" th:href="@{/delAll}">删除所有文件</a>
     </div>
     <hr>
     <table border="0">

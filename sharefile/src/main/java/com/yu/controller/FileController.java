@@ -1,23 +1,24 @@
 package com.yu.controller;
 
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.metadata.Sheet;
-import com.alibaba.excel.support.ExcelTypeEnum;
 import com.yu.entity.FileInfo;
 import com.yu.util.ExportExcelUtil;
+import com.yu.util.ThreadPoolUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.util.StopWatch;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +31,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @Controller
 public class FileController {
@@ -38,30 +41,49 @@ public class FileController {
     private String filePath;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
-
+    private StopWatch stopWatch = new StopWatch();
     //如果不配置默认10G
-    @Value("${file.maxSpace:10240}")
+    @Value("${file.maxSpace:1024}")
     private long maxSpace;
+
+    @Autowired
+    private HttpServletRequest request;
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private void upload(MultipartFile file) {
 
         //判断剩余空间是否可以存储
-        if (DataSize.ofBytes(file.getSize()).toMegabytes() > getRemainSpace(new File(filePath))) {
+        long needSpace = DataSize.ofBytes(file.getSize()).toMegabytes();
+        long remainSpace = getRemainSpace(new File(filePath));
+        if (needSpace > remainSpace) {
             throw new RuntimeException("剩余空间不足，请联系管理员处理！");
         }
-
         // 获取原始名字
         String oldFileName = file.getOriginalFilename();
         //处理文件名
         String newFileName = dealFileName(oldFileName);
+        LOGGER.info(String.format("开始上传文件原名为%s,新名为%s,需要空间%sMB,剩余空间为%sMB",
+                oldFileName, newFileName, needSpace, remainSpace));
         try {
             // 保存到服务器中
             file.transferTo(new File(filePath, newFileName));
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @GetMapping("/delAll")
+    public String delAll(Model model) {
+        File file = new File(filePath);
+        try {
+            FileUtils.cleanDirectory(file);
+        } catch (IOException e) {
+            model.addAttribute("errMsg", e.getMessage());
+            e.printStackTrace();
+            return "err";
+        }
+        return "redirect:/";
     }
 
     private String dealFileName(String fileName) {
@@ -80,17 +102,67 @@ public class FileController {
         return fileName;
     }
 
+    /**
+     * 文件上传单线程
+     *
+     * @param files
+     * @param model
+     * @return
+     */
     @PostMapping("/upload")
     public String upload(@RequestParam("files") MultipartFile[] files, Model model) {
+        stopWatch.start();
+        String remoteHost = request.getRemoteHost();
+        String remoteAddr = request.getRemoteAddr();
+        LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
         try {
             for (MultipartFile file : files) {
                 upload(file);
             }
         } catch (Exception e) {
             model.addAttribute("errMsg", e.getMessage());
-            //e.printStackTrace();
+            e.printStackTrace();
             return "err";
         }
+        stopWatch.stop();
+        double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
+        LOGGER.info("本次上传共耗时:" + totalTimeSeconds + "秒！");
+        return "redirect:/";
+    }
+
+    /**
+     * 文件上传多线程版本
+     * 多线程上传目前有问题，因为多个文件同时上传，去判断磁盘剩余空间时就会有问题，导致上传的比限制的多
+     * 而且一旦剩余空间不够，要抛异常，在thread里异常抛不出来
+     *
+     * @param files
+     * @param model
+     * @return
+     */
+    @PostMapping("/upload1")
+    public String uploadUseThread(@RequestParam("files") MultipartFile[] files, Model model) throws InterruptedException {
+        stopWatch.start();
+        String remoteHost = request.getRemoteHost();
+        String remoteAddr = request.getRemoteAddr();
+        LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
+        CountDownLatch countDownLatch = new CountDownLatch(files.length);
+        try {
+            for (MultipartFile file : files) {
+                ThreadPoolUtil.submit(() -> {
+                    upload(file);
+                    countDownLatch.countDown();
+                });
+            }
+        } catch (Exception e) {
+            model.addAttribute("errMsg", e.getMessage());
+            e.printStackTrace();
+            return "err";
+        }
+        countDownLatch.await();
+        stopWatch.stop();
+        double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
+        LOGGER.info("本次上传共耗时:" + totalTimeSeconds + "秒！");
+        model.addAttribute("time", totalTimeSeconds);
         return "redirect:/";
     }
 
@@ -243,7 +315,8 @@ public class FileController {
      * @return
      */
     private double getSpaceUsageRate(File file) {
-        return Double.longBitsToDouble(getUsedSpace(file)) / Double.longBitsToDouble(maxSpace);
+        double v = Double.longBitsToDouble(getUsedSpace(file)) * 100 / Double.longBitsToDouble(maxSpace);
+        return Double.parseDouble(String.format("%.2f", v));
     }
 
 

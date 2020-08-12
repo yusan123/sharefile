@@ -4,8 +4,8 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 1000MB
-      max-request-size: 1000MB
+      max-file-size: 500MB
+      max-request-size: 500MB
       #location: E:/upload/
   thymeleaf:
     cache: false
@@ -19,4 +19,4 @@ spring:
 
 file:
   path: E:/upload/
-  maxSpace: 500
+  maxSpace: 300
