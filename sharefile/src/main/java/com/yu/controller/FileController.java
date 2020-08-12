@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 @Controller
 public class FileController {
@@ -74,15 +73,9 @@ public class FileController {
     }
 
     @GetMapping("/delAll")
-    public String delAll(Model model) {
+    public String delAll(Model model) throws IOException {
         File file = new File(filePath);
-        try {
-            FileUtils.cleanDirectory(file);
-        } catch (IOException e) {
-            model.addAttribute("errMsg", e.getMessage());
-            e.printStackTrace();
-            return "err";
-        }
+        FileUtils.cleanDirectory(file);
         return "redirect:/";
     }
 
@@ -115,15 +108,8 @@ public class FileController {
         String remoteHost = request.getRemoteHost();
         String remoteAddr = request.getRemoteAddr();
         LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
-        try {
-            for (MultipartFile file : files) {
-                upload(file);
-            }
-        } catch (Exception e) {
-            model.addAttribute("errMsg", e.getMessage());
-            stopWatch.stop();
-            e.printStackTrace();
-            return "err";
+        for (MultipartFile file : files) {
+            upload(file);
         }
         stopWatch.stop();
         double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
@@ -148,17 +134,11 @@ public class FileController {
         String remoteAddr = request.getRemoteAddr();
         LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
         CountDownLatch countDownLatch = new CountDownLatch(files.length);
-        try {
-            for (MultipartFile file : files) {
-                ThreadPoolUtil.submit(() -> {
-                    upload(file);
-                    countDownLatch.countDown();
-                });
-            }
-        } catch (Exception e) {
-            model.addAttribute("errMsg", e.getMessage());
-            e.printStackTrace();
-            return "err";
+        for (MultipartFile file : files) {
+            ThreadPoolUtil.submit(() -> {
+                upload(file);
+                countDownLatch.countDown();
+            });
         }
         countDownLatch.await();
         stopWatch.stop();
@@ -244,12 +224,7 @@ public class FileController {
         // 创建输出对象
         OutputStream os = response.getOutputStream();
         // 常规操作
-        try {
-            FileCopyUtils.copy(fis, os);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        FileCopyUtils.copy(fis, os);
     }
 
     /**

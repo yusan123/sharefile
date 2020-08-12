@@ -20,3 +20,8 @@ spring:
 file:
   path: E:/upload/
   maxSpace: 300
+
+logging:
+  file: sharefile.log
+  level:
+    root: info
