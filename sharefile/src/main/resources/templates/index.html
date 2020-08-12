@@ -9,7 +9,7 @@
     <input type='file' name='files' multiple>
     <button type='submit'>上传</button>
 </form>
-<!--<div th:text="'本次上传共耗时'+${time}+'s'"></div>-->
+<div th:if="${not #strings.isEmpty(time)}" th:text="'本次上传共耗时'+${time}+'s'"></div>
 <hr>
 <div id="fileInfo">
     <div th:text="'当前有'+${fileNum}+'个文件，文件所在目录： '+${filePath}"></div>

@@ -121,13 +121,15 @@ public class FileController {
             }
         } catch (Exception e) {
             model.addAttribute("errMsg", e.getMessage());
+            stopWatch.stop();
             e.printStackTrace();
             return "err";
         }
         stopWatch.stop();
         double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
         LOGGER.info("本次上传共耗时:" + totalTimeSeconds + "秒！");
-        return "redirect:/";
+        model.addAttribute("time", totalTimeSeconds);
+        return "redirect:/?time=" + totalTimeSeconds;
     }
 
     /**
@@ -266,6 +268,8 @@ public class FileController {
 
         TreeSet<FileInfo> data = getFileInfos(files);
 
+        String time = request.getParameter("time");
+        model.addAttribute("time", time);
         model.addAttribute("fileNum", files.length);
         model.addAttribute("filePath", filePath);
         model.addAttribute("usedSpace", getUsedSpace(file));
