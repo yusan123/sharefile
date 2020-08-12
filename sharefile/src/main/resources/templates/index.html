@@ -5,7 +5,7 @@
     <title>文件共享</title>
 </head>
 <body bgcolor="#a9a9a9">
-<form action='http://localhost:8080/upload' method='post' enctype='multipart/form-data'>
+<form  th:action='@{/upload}' method='post' enctype='multipart/form-data'>
     <input type='file' name='files' multiple>
     <button type='submit'>上传</button>
 </form>
@@ -18,10 +18,13 @@
     <div th:text="'剩余可用空间'+${remainSpace}+'MB'"></div>
     <div>
         <span th:text="'空间使用率'+${spaceUsageRate}+'%'"></span>
-        <canvas th:if="${spaceUsageRate}&lt;60" width="35" height="20" style="background-color: greenyellow"></canvas>
-        <canvas th:if="${spaceUsageRate}&gt;60 and ${spaceUsageRate}&lt;90" width="35" height="20"
-                style="background-color: yellow"></canvas>
-        <canvas th:if="${spaceUsageRate}&gt;90" width="35" height="20" style="background-color: red"></canvas>
+        <canvas th:style="'background-color: '+ (${spaceUsageRate}<60 ? 'greenyellow':(${spaceUsageRate}>90 ? 'red':'yellow'))" width="35" height="20"></canvas>
+<!--        Todo 增加类似于windows磁盘那种百分比的图示-->
+<!--        <div style="width:100px; height:15px;-->
+<!--            margin:3px 10px 0 10px;border-style:solid;border-width:1px;">-->
+<!--            <div th:style="'background:#5f8dd4;height:15px;width:'+ ${spaceUsageRate}+''">-->
+<!--            </div>-->
+<!--        </div>-->
     </div>
     <div>
         <a href="#" th:href="@{/export}">导出文件列表</a>
