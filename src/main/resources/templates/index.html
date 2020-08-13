@@ -16,7 +16,7 @@
     <div th:text="'当前有'+${fileNum}+'个文件，文件所在目录： '+${filePath}"></div>
     <div th:text="'最大可用空间'+${maxSpace}+'MB'"></div>
     <div th:text="'已使用空间'+${usedSpace}+'MB'"></div>
-    <div th:text="'剩余可用空间'+${remainSpace}+'MB'"></div>
+    <div id="remainSpace" th:text="'剩余可用空间'+${remainSpace}+'MB'"></div>
     <div>
         <span>空间使用率</span>
         <div style="display: inline-grid">
@@ -49,129 +49,51 @@
             <td><a href="/" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a></td>
             <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">下载</a></td>
         </tr>
-
     </table>
 </div>
 </body>
-<!--<script>-->
-<!--    let upload = document.querySelector('#fileInput');-->
-<!--    let fileListDom = document.querySelector('#content');-->
-<!--    let fileList = {};-->
-<!--    let formData = new FormData();-->
-<!--    upload.addEventListener('change', function() {-->
-<!--        for (let i = this.files.length - 1; i >= 0; i&#45;&#45;) {-->
-<!--            let file = this.files[i];-->
-<!--            let key = file.name;-->
-<!--            let fileItem = {-->
-<!--                'file': file,-->
-<!--                'cover': ''-->
-<!--            }-->
-
-<!--            if (/(image\/)/.test(file.type)) {-->
-<!--                let reader = new FileReader();-->
-<!--                reader.readAsDataURL(file);-->
-<!--                reader.onload = function() {-->
-<!--                    fileItem.cover = this.result;-->
-<!--                    fileList[key] = fileItem;-->
-<!--                    formData.append(key, file);-->
-<!--                    showFile(key, true);-->
-<!--                }-->
-<!--            } else {-->
-<!--                fileList[key] = fileItem;-->
-<!--                formData.append(key, file);-->
-<!--                showFile(key, false);-->
-<!--            }-->
-
-<!--        }-->
-<!--    });-->
-
-<!--    // 触发删除事件-->
-<!--    fileListDom.addEventListener('click', function(e) {-->
-<!--        let target = e.target || e.srcElement;-->
-<!--        if (target.classList.contains('pre-item')) {-->
-<!--            delFile(target.getAttribute('key'));-->
-<!--        }-->
-<!--    });-->
-
-<!--    // 显示图片-->
-<!--    function showFile(key, isImg) {-->
-<!--        let file = document.querySelector(`[key="${key}"]`);-->
-<!--        if (file === null) {-->
-<!--            if (isImg) {-->
-<!--                fileListDom.innerHTML += '<div key="' + key + '" class="pre-item"><img height="30" width="50" src="' + fileList[key].cover + '"/></div>';-->
-<!--            } else {-->
-<!--                fileListDom.innerHTML += '<div key="' + key + '" class="pre-item">' + key + '</div>';-->
-<!--            }-->
-<!--        } else {-->
-<!--            file.style.display = 'block';-->
-<!--        }-->
-<!--    }-->
-
-<!--    // 删除图片-->
-<!--    function delFile(key) {-->
-<!--        let file = document.querySelector(`[key="${key}"]`);-->
-<!--        if (file !== null) {-->
-<!--            delete fileList[key];-->
-<!--            formData.delete(key);-->
-<!--            file.style.display = 'none';-->
-<!--        }-->
-<!--    }-->
-<!--</script>-->
 
 <script>
     let data = [];
 
-    let test = document.getElementById('fileInput');
-    test.addEventListener('change', function () {
+    let fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', function () {
         let fs = this.files;
         let len = fs.length;
         console.log(fs);
         console.log("长度是：" + len);
-        let names = data.map(a =>a.name);
+        let names = data.map(a => a.name);
         data = [];
         for (let i = 0; i < fs.length; i++) {
-            //不添加重复元素
-            // if(!names.includes(fs[i].name)){
-            //     data.push(fs[i]);
-            // }
             data.push(fs[i]);
         }
-        //去重后进行生成
-        document.getElementById('content').innerHTML = buildLi(data);
 
+
+        //展示列表
+        document.getElementById('content').innerHTML = buildLi(data);
     }, false);
 
-    function createFilesFromArray2(files) {
-
-        let size = data.length;
-        filelist = Object.assign({},files)
-        for(let i = 0; i < size; i++){
-            filelist[i] = data[i];
-        }
-        filelist.length = size;
-        console.log(filelist);
-        return filelist;
-    }
 
     function test1(fs) {
         fs.app = "test";
         console.log(fs);
     }
-    function createFilesFromArray() {
-        //let fl = new FileList();
-        let fl = {};
-        let size = data.length;
-        for(let i = 0;i<size;i++){
-            fl[i] = data[i];
-        }
-        fl.length = size;
-        console.log(fl);
-        return fl;
-    }
+
     function buildLi(data) {
         let str = '';
+        let totalFileSize = 0;
         for (let f of data) {
-            str += '<li>名称：' + f.name + '----大小:' + (f.size / 1024 / 1024).toFixed(2) + 'MB</li>';
+            let fileSize = (f.size / 1024 / 1024);
+            str += '<li>名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB</li>';
+            totalFileSize += fileSize;
+        }
+        str = '<li>待上传文件总大小：' + totalFileSize.toFixed(2) + 'MB</li>' + str;
+        //计算剩余空间是否充足，进行提示
+        let remainSpace = [[${remainSpace}]];
+
+        if (remainSpace < totalFileSize) {
+            let number = (totalFileSize - remainSpace);
+            str = '<li style="color: red;font-size: 25px">警告:待上传文件总大小超过剩余可用空间，可能会有部分文件上传失败!缺少' + number.toFixed(2) +"MB空间</li>" + str;
         }
         return str;
     }
