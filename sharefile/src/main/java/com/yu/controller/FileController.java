@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.util.StopWatch;
+import org.springframework.util.StringUtils;
 import org.springframework.util.unit.DataSize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -133,14 +134,23 @@ public class FileController {
      */
     @PostMapping("/upload")
     public String upload(@RequestParam("files") MultipartFile[] files, Model model) {
+        if (files[0] == null || StringUtils.isEmpty(files[0].getOriginalFilename())) {
+            throw new RuntimeException("你没有选择任何文件，请选择文件后再上传！");
+        }
         stopWatch.start();
         String remoteHost = request.getRemoteHost();
         String remoteAddr = request.getRemoteAddr();
         LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
-        for (MultipartFile file : files) {
-            upload(file);
+        try {
+            for (MultipartFile file : files) {
+                upload(file);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            stopWatch.stop();
         }
-        stopWatch.stop();
         double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
         LOGGER.info("本次上传共耗时:" + totalTimeSeconds + "秒！");
         model.addAttribute("time", totalTimeSeconds);

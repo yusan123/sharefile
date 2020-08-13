@@ -33,5 +33,6 @@ build/
 .vscode/
 
 *.log
+*log*
 logs
 log

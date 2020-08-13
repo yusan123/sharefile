@@ -6,7 +6,8 @@
 </head>
 <body bgcolor="#a9a9a9">
 <form th:action='@{/upload}' method='post' enctype='multipart/form-data'>
-    <input type='file' name='files' multiple>
+    <input type='file' name='files' id="fileInput" multiple>
+    <div id="content"></div>
     <button type='submit'>上传</button>
 </form>
 <div th:if="${not #strings.isEmpty(time)}" th:text="'本次上传共耗时'+${time}+'s'">&nbsp;</div>
@@ -21,7 +22,8 @@
         <div style="display: inline-grid">
             <div style="width:100px; height:20px;margin:3px 10px 0 10px;border-style:solid;border-width:1px;">
                 <div th:style="'background-color:'+ (${spaceUsageRate}<60 ? 'greenyellow':(${spaceUsageRate}>90 ? 'red':'yellow'))
-            +';height:20px;width:'+${spaceUsageRate} +'%'">[[${spaceUsageRate}+'%']]</div>
+            +';height:20px;width:'+${spaceUsageRate} +'%'">[[${spaceUsageRate}+'%']]
+                </div>
             </div>
         </div>
     </div>
@@ -36,7 +38,7 @@
         <tr>
             <th>fileName</th>
             <th>fileSize</th>
-            <th>uploadtime</th>
+            <th>uploadTime</th>
             <th>delete</th>
             <th>download</th>
         </tr>
@@ -47,7 +49,132 @@
             <td><a href="/" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a></td>
             <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">下载</a></td>
         </tr>
+
     </table>
 </div>
 </body>
+<!--<script>-->
+<!--    let upload = document.querySelector('#fileInput');-->
+<!--    let fileListDom = document.querySelector('#content');-->
+<!--    let fileList = {};-->
+<!--    let formData = new FormData();-->
+<!--    upload.addEventListener('change', function() {-->
+<!--        for (let i = this.files.length - 1; i >= 0; i&#45;&#45;) {-->
+<!--            let file = this.files[i];-->
+<!--            let key = file.name;-->
+<!--            let fileItem = {-->
+<!--                'file': file,-->
+<!--                'cover': ''-->
+<!--            }-->
+
+<!--            if (/(image\/)/.test(file.type)) {-->
+<!--                let reader = new FileReader();-->
+<!--                reader.readAsDataURL(file);-->
+<!--                reader.onload = function() {-->
+<!--                    fileItem.cover = this.result;-->
+<!--                    fileList[key] = fileItem;-->
+<!--                    formData.append(key, file);-->
+<!--                    showFile(key, true);-->
+<!--                }-->
+<!--            } else {-->
+<!--                fileList[key] = fileItem;-->
+<!--                formData.append(key, file);-->
+<!--                showFile(key, false);-->
+<!--            }-->
+
+<!--        }-->
+<!--    });-->
+
+<!--    // 触发删除事件-->
+<!--    fileListDom.addEventListener('click', function(e) {-->
+<!--        let target = e.target || e.srcElement;-->
+<!--        if (target.classList.contains('pre-item')) {-->
+<!--            delFile(target.getAttribute('key'));-->
+<!--        }-->
+<!--    });-->
+
+<!--    // 显示图片-->
+<!--    function showFile(key, isImg) {-->
+<!--        let file = document.querySelector(`[key="${key}"]`);-->
+<!--        if (file === null) {-->
+<!--            if (isImg) {-->
+<!--                fileListDom.innerHTML += '<div key="' + key + '" class="pre-item"><img height="30" width="50" src="' + fileList[key].cover + '"/></div>';-->
+<!--            } else {-->
+<!--                fileListDom.innerHTML += '<div key="' + key + '" class="pre-item">' + key + '</div>';-->
+<!--            }-->
+<!--        } else {-->
+<!--            file.style.display = 'block';-->
+<!--        }-->
+<!--    }-->
+
+<!--    // 删除图片-->
+<!--    function delFile(key) {-->
+<!--        let file = document.querySelector(`[key="${key}"]`);-->
+<!--        if (file !== null) {-->
+<!--            delete fileList[key];-->
+<!--            formData.delete(key);-->
+<!--            file.style.display = 'none';-->
+<!--        }-->
+<!--    }-->
+<!--</script>-->
+
+<script>
+    let data = [];
+
+    let test = document.getElementById('fileInput');
+    test.addEventListener('change', function () {
+        let fs = this.files;
+        let len = fs.length;
+        console.log(fs);
+        console.log("长度是：" + len);
+        let names = data.map(a =>a.name);
+        data = [];
+        for (let i = 0; i < fs.length; i++) {
+            //不添加重复元素
+            // if(!names.includes(fs[i].name)){
+            //     data.push(fs[i]);
+            // }
+            data.push(fs[i]);
+        }
+        //去重后进行生成
+        document.getElementById('content').innerHTML = buildLi(data);
+
+    }, false);
+
+    function createFilesFromArray2(files) {
+
+        let size = data.length;
+        filelist = Object.assign({},files)
+        for(let i = 0; i < size; i++){
+            filelist[i] = data[i];
+        }
+        filelist.length = size;
+        console.log(filelist);
+        return filelist;
+    }
+
+    function test1(fs) {
+        fs.app = "test";
+        console.log(fs);
+    }
+    function createFilesFromArray() {
+        //let fl = new FileList();
+        let fl = {};
+        let size = data.length;
+        for(let i = 0;i<size;i++){
+            fl[i] = data[i];
+        }
+        fl.length = size;
+        console.log(fl);
+        return fl;
+    }
+    function buildLi(data) {
+        let str = '';
+        for (let f of data) {
+            str += '<li>名称：' + f.name + '----大小:' + (f.size / 1024 / 1024).toFixed(2) + 'MB</li>';
+        }
+        return str;
+    }
+
+</script>
 </html>
