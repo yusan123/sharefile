@@ -7,8 +7,12 @@
 <body bgcolor="#a9a9a9">
 <form th:action='@{/upload}' method='post' enctype='multipart/form-data'>
     <input type='file' name='files' id="fileInput" multiple>
+    <div>
+        <span th:text="'单文件上传限制最大为'+${maxFileSize}+'MB'"></span>
+        <span th:text="'一次上传限制最大为'+${maxRequestSize}+'MB'"></span>
+    </div>
     <div id="content"></div>
-    <button type='submit'>上传</button>
+    <button type='submit' id="sub" >上传</button>
 </form>
 <div th:if="${not #strings.isEmpty(time)}" th:text="'本次上传共耗时'+${time}+'s'">&nbsp;</div>
 <hr>
@@ -55,7 +59,7 @@
 
 <script>
     let data = [];
-
+    let canSubmit = true;
     let fileInput = document.getElementById('fileInput');
     fileInput.addEventListener('change', function () {
         let fs = this.files;
@@ -67,10 +71,18 @@
         for (let i = 0; i < fs.length; i++) {
             data.push(fs[i]);
         }
-
-
         //展示列表
         document.getElementById('content').innerHTML = buildLi(data);
+        console.log(canSubmit);
+        let sub = document.getElementById('sub');
+        if (!canSubmit) {
+            sub.innerHTML = "不可上传";
+            sub.setAttribute("disabled", "true111");
+        }else{
+            sub.innerHTML = "上传";
+            sub.removeAttribute("disabled");
+        }
+        canSubmit = true;
     }, false);
 
 
@@ -82,9 +94,18 @@
     function buildLi(data) {
         let str = '';
         let totalFileSize = 0;
+        //计算剩余空间是否充足，进行提示
+        let maxFileSize = [[${maxFileSize}]];
         for (let f of data) {
             let fileSize = (f.size / 1024 / 1024);
-            str += '<li>名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB</li>';
+            if (maxFileSize > fileSize) {
+                str += '<li style="color: green">名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB</li>';
+            } else {
+                //单个文件超过限制
+                canSubmit = false;
+                str += '<li style="color: darkred">名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB, 超过最大单个文件上传限制，将会上传失败！</li>';
+            }
+
             totalFileSize += fileSize;
         }
         str = '<li>待上传文件总大小：' + totalFileSize.toFixed(2) + 'MB</li>' + str;
@@ -93,7 +114,15 @@
 
         if (remainSpace < totalFileSize) {
             let number = (totalFileSize - remainSpace);
-            str = '<li style="color: red;font-size: 25px">警告:待上传文件总大小超过剩余可用空间，可能会有部分文件上传失败!缺少' + number.toFixed(2) +"MB空间</li>" + str;
+            canSubmit = false;
+            str = '<li style="color: darkred;font-size: 20px">警告:待上传文件总大小超过剩余可用空间，可能会有部分文件上传失败!缺少' + number.toFixed(2) + "MB空间</li>" + str;
+        }
+        //计算单此请求空间是否小于配置要求
+        let maxRequestSize = [[${maxRequestSize}]];
+        if (maxRequestSize < totalFileSize) {
+            let number = (totalFileSize - maxRequestSize);
+            canSubmit = false;
+            str = '<li style="color: darkred;font-size: 20px">警告:待上传文件总大小超过单次最大上传数，超过' + number.toFixed(2) + "MB空间</li>" + str;
         }
         return str;
     }

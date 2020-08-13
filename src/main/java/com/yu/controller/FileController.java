@@ -52,6 +52,13 @@ public class FileController {
     @Value("${file.maxSpace:1024}")
     private long maxSpace;
 
+//    @Value("${spring.servlet.multipart.max-file-size:100}")
+    @Value("#{'${spring.servlet.multipart.max-file-size}'.replaceAll('MB','')}")
+    private int maxFileSize;
+
+    @Value("#{'${spring.servlet.multipart.max-request-size}'.replaceAll('MB','')}")
+    private int maxRequestSize;
+
     private static final String SHAREFILE = "sharefile";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private StopWatch stopWatch = new StopWatch();
@@ -314,6 +321,8 @@ public class FileController {
         model.addAttribute("filePath", filePath);
         model.addAttribute("usedSpace", getUsedSpace(file));
         model.addAttribute("maxSpace", maxSpace);
+        model.addAttribute("maxFileSize", maxFileSize);
+        model.addAttribute("maxRequestSize", maxRequestSize);
         model.addAttribute("remainSpace", getRemainSpace(file));
         model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
         model.addAttribute("files", data);
