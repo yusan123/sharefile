@@ -3,10 +3,13 @@ set -x
 HOME=$(cd "$(dirname $0)/..";pwd)
 cd $HOME
 
-DIR=sharefile-bin
+DIRNAME=sharefile-
+VERSION=0.0.1-SNAPSHOT
+
+DIR=$DIRNAME$VERSION-bin
 
 rm -rf $DIR
-rm -rf sharefile.tgz
+rm -rf $DIR.tgz
 
 mkdir -p $DIR
 
@@ -24,6 +27,6 @@ ls -l $DIR
 
 cp ./target/*.jar $DIR
 
-tar -zcvf sharefile.tgz $DIR
+tar -zcvf $DIR.tgz $DIR
 
 rm -rf $DIR
