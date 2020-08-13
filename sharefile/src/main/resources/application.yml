@@ -16,19 +16,20 @@ spring:
   resources:
     static-locations: classpath:/templates/,classpath:/static/
 
-
-file:
-  path: E:/upload/
-  maxSpace: 300
-  isOpenComplexChar: true #是否开启支持上传包含特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
-  isOpenDelete: true  #是否开启删除
-  isOpenDeleteAll: true  #是否开启删除所有文件
-  isOpenUpload: true     #是否开启下载
-  isOpenDownload: true  #是否开启下载
-  isOpenDownloadAll: true #是否开启下载所有文件
-
 logging:
   file: sharefile.log
   level:
     root: info
+
+#自定义配置
+file:
+  path: E:/upload/ #作为存储的目录
+  maxSpace: 300  #可以使用的最大空间MB
+  isOpenComplexChar: false #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
+  isOpenDelete: true  #是否开启删除
+  isOpenDeleteAll: false  #是否开启删除所有文件
+  isOpenUpload: true     #是否开启下载
+  isOpenDownload: true  #是否开启下载
+  isOpenDownloadAll: true #是否开启下载所有文件
+
 

@@ -1,6 +1,7 @@
 package com.yu.controller;
 
 import com.yu.entity.FileInfo;
+import com.yu.exception.ShareFileException;
 import com.yu.util.ExportExcelUtil;
 import com.yu.util.FileToZip;
 import com.yu.util.ThreadPoolUtil;
@@ -41,6 +42,12 @@ public class FileController {
     @Value("${file.path}")
     private String filePath;
 
+    @Value("${file.isOpenComplexChar:false}")
+    private boolean isOpenComplexChar;
+
+    @Value("${file.isOpenDeleteAll:true}")
+    private boolean isOpenDeleteAll;
+
     private static final String SHAREFILE = "sharefile";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private StopWatch stopWatch = new StopWatch();
@@ -59,7 +66,7 @@ public class FileController {
         long needSpace = DataSize.ofBytes(file.getSize()).toMegabytes();
         long remainSpace = getRemainSpace(new File(filePath));
         if (needSpace > remainSpace) {
-            throw new RuntimeException("剩余空间不足，请联系管理员处理！");
+            throw new ShareFileException("剩余空间不足，请联系管理员处理！");
         }
         // 获取原始名字
         String oldFileName = file.getOriginalFilename();
@@ -84,6 +91,9 @@ public class FileController {
      */
     @GetMapping("/delAll")
     public String delAll(Model model) throws IOException {
+        if (!isOpenDeleteAll) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
         File file = new File(filePath);
         FileUtils.cleanDirectory(file);
         return "redirect:/";
@@ -92,35 +102,47 @@ public class FileController {
     @GetMapping("/downloadAll")
     public void downloadAllZip(HttpServletResponse response) throws IOException {
 
-        String tmpZipPath = filePath + "/tmp/";
+        String tmpZipPath = filePath + "/tmp";
         File tempPath = new File(tmpZipPath);
-        if (!tempPath.exists()) {
-            tempPath.mkdirs();
-        }
-        //压缩的过程
-        boolean zipRes = FileToZip.fileToZip(filePath, tmpZipPath, SHAREFILE);
+        try {
+            if (!tempPath.exists()) {
+                tempPath.mkdirs();
+            }
+            //压缩的过程
+            boolean zipRes = FileToZip.fileToZip(filePath, tmpZipPath, SHAREFILE);
 
-        if (zipRes) {
-            String zipFileName = SHAREFILE + ".zip";
-            File file = new File(tmpZipPath, zipFileName);
-            downloadFile(zipFileName, response, file);
+            if (zipRes) {
+                String zipFileName = SHAREFILE + ".zip";
+                File file = new File(tmpZipPath, zipFileName);
+                downloadFile(zipFileName, response, file);
+            }
+        } finally {
+            //下载完成后清理临时数据
+            FileUtils.deleteDirectory(tempPath);
         }
-        //下载完成后清理临时数据
-        FileUtils.cleanDirectory(tempPath);
     }
 
     private String dealFileName(String fileName) {
+        //超长处理
         if (fileName.length() > 100) {
             fileName = fileName.substring(0, 100);
         }
+        // 获取后缀名
+        String suffixName = fileName.substring(fileName.lastIndexOf("."));
+        String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+        if (!isOpenComplexChar) {
+            //如果关闭支持特殊字符后，文件包含特殊字符，则将文件名改为uuid
+            if (fileName.length() != fileName.replaceAll("[^\\w-_.]", "").length()) {
+                //认为包含特殊字符
+                return uuid + suffixName;
+            }
+        }
+        //重名处理
         File file = new File(filePath, fileName);
         if (file.exists()) {
-            // 获取后缀名
-            String suffixName = fileName.substring(fileName.lastIndexOf("."));
             // 获取文件名
             String pureName = fileName.substring(0, fileName.lastIndexOf("."));
-            fileName = pureName + "_"
-                    + UUID.randomUUID().toString().replaceAll("-", "") + suffixName;
+            fileName = pureName + "_" + uuid + suffixName;
         }
         return fileName;
     }
@@ -135,7 +157,7 @@ public class FileController {
     @PostMapping("/upload")
     public String upload(@RequestParam("files") MultipartFile[] files, Model model) {
         if (files[0] == null || StringUtils.isEmpty(files[0].getOriginalFilename())) {
-            throw new RuntimeException("你没有选择任何文件，请选择文件后再上传！");
+            throw new ShareFileException("你没有选择任何文件，请选择文件后再上传！");
         }
         stopWatch.start();
         String remoteHost = request.getRemoteHost();
@@ -146,7 +168,6 @@ public class FileController {
                 upload(file);
             }
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         } finally {
             stopWatch.stop();
@@ -363,9 +384,15 @@ public class FileController {
      * @return
      */
     @GetMapping("/delete")
-    public String delFile(@RequestParam String fileName) {
+    public String delFile(@RequestParam String fileName) throws IOException {
+        /**
+         * java 流的close方法同system.gc方法只是告诉jvm，这里需要清理，但不一定立刻被清理，
+         * 所以在上传完文件后，立刻删除文件会提示文件被占用
+         * 解决办法：在调用file.delete()之前，调用System.gc(),就不会出现文件被占用的情况了
+         */
+        System.gc();
         File file = new File(filePath, fileName);
-        boolean delete = file.delete();
+        FileUtils.forceDelete(file);
         return "redirect:/";
     }
 }
