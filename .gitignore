@@ -36,3 +36,5 @@ build/
 *log*
 logs
 log
+*.tgz
+
