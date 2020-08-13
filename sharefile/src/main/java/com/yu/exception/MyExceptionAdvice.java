@@ -19,11 +19,11 @@ public class MyExceptionAdvice implements ErrorController {
         Integer statusCode = (Integer) request.getAttribute("javax.servlet.error.status_code");
         switch (statusCode) {
             case 404:
-                return "/404";
+                return "404";
             case 400:
-                return "/400";
+                return "400";
             default:
-                return "/500";
+                return "500";
         }
     }
 

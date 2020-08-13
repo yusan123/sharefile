@@ -48,12 +48,13 @@ public class FileController {
     @Value("${file.isOpenDeleteAll:true}")
     private boolean isOpenDeleteAll;
 
+    //如果不配置默认1G
+    @Value("${file.maxSpace:1024}")
+    private long maxSpace;
+
     private static final String SHAREFILE = "sharefile";
     private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private StopWatch stopWatch = new StopWatch();
-    //如果不配置默认10G
-    @Value("${file.maxSpace:1024}")
-    private long maxSpace;
 
     @Autowired
     private HttpServletRequest request;
