@@ -24,7 +24,7 @@ logging:
   level:
     root: info
   file:
-    name: sharefile.log
+    name: logs/sharefile.log
 
 #自定义配置
 file:

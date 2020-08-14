@@ -4,9 +4,8 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 500MB
-      max-request-size: 500MB
-      #location: E:/upload/
+      max-file-size: 100MB
+      max-request-size: 200MB
   thymeleaf:
     cache: false
   mvc:
@@ -25,13 +24,13 @@ logging:
   level:
     root: info
   file:
-    name: sharefile.log
+    name: logs/sharefile.log
 
 #自定义配置
 file:
-  path: /opt/shareData #作为存储的目录
+  path: I:\mypython #作为存储的目录
   maxSpace: 300  #可以使用的最大空间MB
-  isOpenComplexChar: true #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
+  isOpenComplexChar: false #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
   isOpenDelete: true  #是否开启删除
   isOpenDeleteAll: false  #是否开启删除所有文件
   isOpenUpload: true     #是否开启下载
