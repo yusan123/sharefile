@@ -1,5 +1,7 @@
 server:
   port: 8080
+  tomcat:
+    max-swallow-size: -1
 
 spring:
   servlet:
@@ -20,6 +22,7 @@ spring:
       enabled: true
       force-request: true
       force-response: true
+
 logging:
   level:
     root: info
@@ -30,7 +33,7 @@ logging:
 file:
   path: I:\mypython #作为存储的目录
   maxSpace: 300  #可以使用的最大空间MB
-  isOpenComplexChar: false #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
+  isOpenComplexChar: true #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
   isOpenDelete: true  #是否开启删除
   isOpenDeleteAll: false  #是否开启删除所有文件
   isOpenUpload: true     #是否开启下载

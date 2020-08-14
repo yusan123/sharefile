@@ -13,7 +13,7 @@ public class ExeHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ExeHandler.class);
 
-    @ExceptionHandler
+    @ExceptionHandler(Exception.class)
     public String exeHandler(HttpServletRequest request, Exception e, Model model) {
         model.addAttribute("errMsg", e.getMessage());
         String ipHost = request.getRemoteAddr() + "-" + request.getRemoteHost();
