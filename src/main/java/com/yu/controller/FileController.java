@@ -4,6 +4,7 @@ import com.yu.entity.FileInfo;
 import com.yu.exception.ShareFileException;
 import com.yu.util.ExportExcelUtil;
 import com.yu.util.FileToZip;
+import com.yu.util.RequestUtil;
 import com.yu.util.ThreadPoolUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -87,6 +88,7 @@ public class FileController {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        LOGGER.info(String.format("开始上传文件原名为%s,新名为%s,上传成功！", oldFileName, newFileName));
     }
 
     /**
@@ -167,9 +169,6 @@ public class FileController {
             throw new ShareFileException("你没有选择任何文件，请选择文件后再上传！");
         }
         stopWatch.start();
-        String remoteHost = request.getRemoteHost();
-        String remoteAddr = request.getRemoteAddr();
-        LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
         try {
             for (MultipartFile file : files) {
                 upload(file);
@@ -197,9 +196,6 @@ public class FileController {
     @PostMapping("/upload1")
     public String uploadUseThread(@RequestParam("files") MultipartFile[] files, Model model) throws InterruptedException {
         stopWatch.start();
-        String remoteHost = request.getRemoteHost();
-        String remoteAddr = request.getRemoteAddr();
-        LOGGER.info(String.format("收到来自%s上传请求,上传文件数为%s", remoteAddr + remoteHost, files.length));
         CountDownLatch countDownLatch = new CountDownLatch(files.length);
         for (MultipartFile file : files) {
             ThreadPoolUtil.submit(() -> {
@@ -278,25 +274,31 @@ public class FileController {
 
     @GetMapping("/download")
     public void download(@RequestParam String fileName, HttpServletResponse response) throws Exception {
-        LOGGER.info("begin download file:" + fileName);
+        LOGGER.info("开始下载文件: " + fileName);
         // 文件地址，真实环境是存放在数据库中的
         File file = new File(filePath, fileName);
         downloadFile(fileName, response, file);
+        LOGGER.info("成功下载文件: " + fileName);
     }
 
-    private void downloadFile(String fileName, HttpServletResponse response, File file) throws IOException {
-        // 穿件输入对象
-        FileInputStream fis = new FileInputStream(file);
-        // 设置相关格式
-        //response.setContentType("application/force-download");
-        response.setContentType("application/octet-stream");
-        // 设置下载后的文件名以及header
-        response.addHeader("Content-Disposition",
-                "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
-        // 创建输出对象
-        OutputStream os = response.getOutputStream();
-        // 常规操作
-        FileCopyUtils.copy(fis, os);
+    private void downloadFile(String fileName, HttpServletResponse response, File file) {
+        try {
+            // 穿件输入对象
+            FileInputStream fis = new FileInputStream(file);
+            // 设置相关格式
+            //response.setContentType("application/force-download");
+            response.setContentType("application/octet-stream");
+            // 设置下载后的文件名以及header
+            response.addHeader("Content-Disposition",
+                    "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+            // 创建输出对象
+            OutputStream os = response.getOutputStream();
+            // 常规操作
+
+            FileCopyUtils.copy(fis, os);
+        } catch (IOException e) {
+            throw new ShareFileException(e.getMessage());
+        }
     }
 
     /**
