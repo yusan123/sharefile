@@ -5,14 +5,14 @@
 
 ### A shared network disk can be realized through the specified size of the local disk space, which can be uploaded and downloaded, deleted, packaged and downloaded, and batch deleted.
 ## 使用说明
-####1.源码启动 springboot启动方式
-####2.编译出包
+#### 1.源码启动 springboot启动方式
+#### 2.编译出包
 ```shell script
 sh script/build.sh
 #完成后
 ls sharefile-0.0.1-SNAPSHOT-bin.tgz
 ```
-####3.运行服务
+#### 3.运行服务
 ```shell script
 tar zxvf sharefile-0.0.1-SNAPSHOT-bin.tgz
 cd sharefile-0.0.1-SNAPSHOT-bin
