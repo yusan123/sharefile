@@ -42,17 +42,16 @@ public class FileController {
     @Value("${file.path}")
     private String filePath;
 
-    @Value("${file.isOpenComplexChar:false}")
+    @Value("${file.isOpenComplexChar:true}")
     private boolean isOpenComplexChar;
 
-    @Value("${file.isOpenDeleteAll:true}")
+    @Value("${file.isOpenDeleteAll:false}")
     private boolean isOpenDeleteAll;
 
     //如果不配置默认1G
     @Value("${file.maxSpace:1024}")
     private long maxSpace;
 
-//    @Value("${spring.servlet.multipart.max-file-size:100}")
     @Value("#{'${spring.servlet.multipart.max-file-size}'.replaceAll('MB','')}")
     private int maxFileSize;
 
@@ -293,7 +292,7 @@ public class FileController {
         response.setContentType("application/octet-stream");
         // 设置下载后的文件名以及header
         response.addHeader("Content-Disposition",
-                "attachment;fileName=" +new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
+                "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
         // 创建输出对象
         OutputStream os = response.getOutputStream();
         // 常规操作
