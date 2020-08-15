@@ -292,7 +292,8 @@ public class FileController {
         //response.setContentType("application/force-download");
         response.setContentType("application/octet-stream");
         // 设置下载后的文件名以及header
-        response.addHeader("Content-disposition", "attachment;fileName=" + new String(fileName.getBytes(), "utf-8"));
+        response.addHeader("Content-Disposition",
+                "attachment;fileName=" +new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
         // 创建输出对象
         OutputStream os = response.getOutputStream();
         // 常规操作
