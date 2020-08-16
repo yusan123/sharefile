@@ -42,6 +42,5 @@
 ####26.日志压缩格式调整  未验证
 
 ####27.本机下载无异常，远程下载会抛一个异常
-```java
-IllegalStateException: getOutputStream() has already been called for this response
-```
+> 这个问题应该是使用chrome浏览器导致的，使用firefox就没有问题
+> chrome等浏览器的预提取资源机制导致的一个请求发送两次的问题

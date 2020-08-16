@@ -18,8 +18,13 @@ tar zxvf sharefile-0.0.1-SNAPSHOT-bin.tgz
 cd sharefile-0.0.1-SNAPSHOT-bin
 #修改配置，主要修改file.path即可
 vim application.yml
-#启动
+#linux mac启动
 sh start.sh
-#停止
+#linux mac停止
 sh shutdown.sh
+
+# windowns 启动停止
+# 双击启动
+start.bat
+#停止 关闭窗口
 ```

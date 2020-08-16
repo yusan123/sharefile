@@ -28,6 +28,10 @@ logging:
     root: info
   file:
     name: logs/sharefile.log
+    max-size: 1MB
+    max-history: 30
+  pattern:
+    rolling-file-name: ${LOG_FILE}.%d{yyyy-MM-dd}.%i.zip
 
 #自定义配置
 file:

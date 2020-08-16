@@ -4,7 +4,6 @@ import com.yu.entity.FileInfo;
 import com.yu.exception.ShareFileException;
 import com.yu.util.ExportExcelUtil;
 import com.yu.util.FileToZip;
-import com.yu.util.RequestUtil;
 import com.yu.util.ThreadPoolUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
