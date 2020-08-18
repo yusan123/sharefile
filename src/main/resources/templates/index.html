@@ -5,11 +5,11 @@
     <title>文件共享</title>
 </head>
 <body bgcolor="#a9a9a9">
-<form th:action='@{/upload}' method='post' enctype='multipart/form-data'>
+<form th:if="${isOpenUpload}" th:action='@{/upload}' method='post' enctype='multipart/form-data'>
     <input type='file' name='files' id="fileInput" multiple>
     <div>
         <span th:text="'单文件上传限制最大为'+${maxFileSize}+'MB'"></span>
-        <span th:text="'一次上传限制最大为'+${maxRequestSize}+'MB'"></span>
+        <span th:text="'单次上传限制最大为'+${maxRequestSize}+'MB'"></span>
     </div>
     <div id="content"></div>
     <button type='submit' id="sub" >上传</button>
@@ -34,8 +34,8 @@
     <hr>
     <div>
         <a href="#" th:href="@{/export}">导出文件列表</a>&nbsp;
-        <a href="#" th:href="@{/delAll}">删除所有文件</a>&nbsp;
-        <a href="#" th:href="@{/downloadAll}">下载所有文件</a>&nbsp;
+        <a href="#" th:if="${isOpenDeleteAll}" th:href="@{/delAll}">删除所有文件</a>&nbsp;
+        <a href="#" th:if="${isOpenDownloadAll}" th:href="@{/downloadAll}">下载所有文件</a>&nbsp;
     </div>
     <hr>
     <table border="0">
@@ -43,15 +43,15 @@
             <th>fileName</th>
             <th>fileSize</th>
             <th>uploadTime</th>
-            <th>delete</th>
-            <th>download</th>
+            <th th:if="${isOpenDelete}">delete</th>
+            <th th:if="${isOpenDownload}">download</th>
         </tr>
         <tr th:each="f: ${files}">
-            <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">[[${f.getFileName()}]]</a></td>
+            <td>[[${f.getFileName()}]]</td>
             <td><span th:text="${f.getSize()}+'MB'"></span></td>
             <td><span th:text="${f.getTime()}"></span></td>
-            <td><a href="/" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a></td>
-            <td><a href="/" th:href="@{/download(fileName=${f.getFileName()})}">下载</a></td>
+            <td><a th:if="${isOpenDelete}" href="/" th:href="@{/delete(fileName=${f.getFileName()})}">删除</a></td>
+            <td><a th:if="${isOpenDownload}" href="/" th:href="@{/download(fileName=${f.getFileName()})}">下载</a></td>
         </tr>
     </table>
 </div>

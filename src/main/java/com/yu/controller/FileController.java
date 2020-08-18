@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import sun.rmi.runtime.Log;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,6 +48,18 @@ public class FileController {
 
     @Value("${file.isOpenDeleteAll:false}")
     private boolean isOpenDeleteAll;
+
+    @Value("${file.isOpenDelete:true}")
+    private boolean isOpenDelete;
+
+    @Value("${file.isOpenUpload:true}")
+    private boolean isOpenUpload;
+
+    @Value("${file.isOpenDownload:true}")
+    private boolean isOpenDownload;
+
+    @Value("${file.isOpenDownloadAll:true}")
+    private boolean isOpenDownloadAll;
 
     //如果不配置默认1G
     @Value("${file.maxSpace:1024}")
@@ -109,7 +122,9 @@ public class FileController {
 
     @GetMapping("/downloadAll")
     public void downloadAllZip(HttpServletResponse response) throws IOException {
-
+        if (!isOpenDownloadAll) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
         String tmpZipPath = filePath + "/tmp";
         File tempPath = new File(tmpZipPath);
         try {
@@ -118,11 +133,12 @@ public class FileController {
             }
             //压缩的过程
             boolean zipRes = FileToZip.fileToZip(filePath, tmpZipPath, SHAREFILE);
-
+            LOGGER.info(String.format("压缩文件%s！即将开始下载！", zipRes ? "成功" : "失败"));
             if (zipRes) {
                 String zipFileName = SHAREFILE + ".zip";
                 File file = new File(tmpZipPath, zipFileName);
                 downloadFile(zipFileName, response, file);
+                LOGGER.info("打包批量下载成功！");
             }
         } finally {
             //下载完成后清理临时数据
@@ -132,8 +148,8 @@ public class FileController {
 
     private String dealFileName(String fileName) {
         //超长处理
-        if (fileName.length() > 100) {
-            fileName = fileName.substring(0, 100);
+        if (fileName.length() > 64) {
+            fileName = fileName.substring(0, 64);
         }
         // 获取后缀名
         String suffixName = fileName.substring(fileName.lastIndexOf("."));
@@ -164,6 +180,9 @@ public class FileController {
      */
     @PostMapping("/upload")
     public String upload(@RequestParam("files") MultipartFile[] files, Model model) {
+        if (!isOpenUpload) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
         if (files[0] == null || StringUtils.isEmpty(files[0].getOriginalFilename())) {
             throw new ShareFileException("你没有选择任何文件，请选择文件后再上传！");
         }
@@ -273,6 +292,9 @@ public class FileController {
 
     @GetMapping("/download")
     public void download(@RequestParam String fileName, HttpServletResponse response) throws Exception {
+        if (!isOpenDownload) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
         LOGGER.info("开始下载文件: " + fileName);
         // 文件地址，真实环境是存放在数据库中的
         File file = new File(filePath, fileName);
@@ -327,6 +349,13 @@ public class FileController {
         model.addAttribute("remainSpace", getRemainSpace(file));
         model.addAttribute("spaceUsageRate", getSpaceUsageRate(file));
         model.addAttribute("files", data);
+
+        //设置开关选项
+        model.addAttribute("isOpenDelete", isOpenDelete);
+        model.addAttribute("isOpenDeleteAll", isOpenDeleteAll);
+        model.addAttribute("isOpenDownload", isOpenDownload);
+        model.addAttribute("isOpenDownloadAll", isOpenDownloadAll);
+        model.addAttribute("isOpenUpload", isOpenUpload);
         return "index";
     }
 
@@ -396,6 +425,9 @@ public class FileController {
      */
     @GetMapping("/delete")
     public String delFile(@RequestParam String fileName) throws IOException {
+        if (!isOpenDelete) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
         /**
          * java 流的close方法同system.gc方法只是告诉jvm，这里需要清理，但不一定立刻被清理，
          * 所以在上传完文件后，立刻删除文件会提示文件被占用
