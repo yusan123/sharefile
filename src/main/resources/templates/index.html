@@ -3,8 +3,21 @@
 <head>
     <meta charset="utf-8">
     <title>文件共享</title>
+    <style>
+        .nav-links {
+            margin-bottom: 10px;
+        }
+        .nav-links a {
+            color: blue;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body bgcolor="#a9a9a9">
+    <div class="nav-links">
+        <a href="/">新界面</a>
+    </div>
 <form th:if="${isOpenUpload}" th:action='@{/upload}' method='post' enctype='multipart/form-data'>
     <input type='file' name='files' id="fileInput" multiple>
     <div>

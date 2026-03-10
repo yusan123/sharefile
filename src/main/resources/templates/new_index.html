@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件共享系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .nav-links {
+            margin-top: 20px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 8px;
+        }
+        
+        .upload-section {
+            margin-bottom: 20px;
+        }
+        
+        .file-input-container {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            transition: border-color 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-container:hover {
+            border-color: #667eea;
+        }
+        
+        .file-input-container input[type="file"] {
+            display: none;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            background-color: #5a6fd8;
+        }
+        
+        .file-list {
+            margin-top: 20px;
+        }
+        
+        .file-item {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .file-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .file-info {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .file-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a6fd8;
+        }
+        
+        .btn-danger {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-secondary {
+            background-color: #95a5a6;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 3px;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .progress-container {
+            margin: 15px 0;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        .progress-fill.low {
+            background-color: #27ae60;
+        }
+        
+        .progress-fill.medium {
+            background-color: #f39c12;
+        }
+        
+        .progress-fill.high {
+            background-color: #e74c3c;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 40px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 0;
+            border: 1px solid #888;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-50px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover,
+        .close:focus {
+            color: #f0f0f0;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 25px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        /* 待上传文件列表样式 */
+        #content {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        #content li {
+            margin: 8px 0;
+            padding: 5px 0;
+            list-style-type: none;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .file-actions {
+                align-self: flex-end;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 20% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div>
+                    <h1>文件共享系统</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="/old">原始界面</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info" th:if="${not #strings.isEmpty(time)}">
+            本次上传共耗时 [[${time}]] 秒
+        </div>
+        
+        <div class="card">
+            <h2>空间使用情况</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">[[${fileNum}]]</div>
+                    <div class="stat-label">文件数量</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">[[${usedSpace}]] MB</div>
+                    <div class="stat-label">已用空间</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">[[${remainSpace}]] MB</div>
+                    <div class="stat-label">剩余空间</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">[[${maxFileSize}]] MB</div>
+                    <div class="stat-label">单文件限制</div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-label">
+                    <span>空间使用率</span>
+                    <span>[[${spaceUsageRate}]]%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" 
+                         th:classappend="${spaceUsageRate} < 60 ? 'low' : (${spaceUsageRate} > 90 ? 'high' : 'medium')"
+                         th:style="'width: ' + ${spaceUsageRate} + '%'">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>文件管理</h2>
+            <div class="action-buttons">
+                <a th:href="@{/export}" class="btn btn-secondary">导出文件列表</a>
+                <a th:if="${isOpenDeleteAll}" href="#" th:data-href="@{/delAll}" class="btn btn-danger delete-all-btn">删除所有文件</a>
+                <a th:if="${isOpenDownloadAll}" th:href="@{/downloadAll}" class="btn btn-primary">下载所有文件</a>
+                <button th:if="${isOpenUpload}" class="btn btn-primary" id="uploadBtn">上传文件</button>
+            </div>
+            
+            <!-- 上传文件模态框 -->
+            <div id="uploadModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>文件上传</h3>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form th:action="@{/upload}" method="post" enctype="multipart/form-data">
+                            <div class="file-input-container">
+                                <input type="file" name="files" id="fileInput" multiple>
+                                <label for="fileInput" class="file-input-label">选择文件</label>
+                                <p>或直接拖拽文件到此处</p>
+                            </div>
+                            <div id="content"></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary close-btn">取消</button>
+                                <button type="submit" class="btn btn-primary" id="sub">上传文件</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 确认删除模态框 -->
+            <div id="confirmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>确认操作</h3>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p id="confirmMessage">确定要执行此操作吗？</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary close-btn">取消</button>
+                        <button type="button" class="btn btn-danger" id="confirmBtn">确认</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="file-list">
+                <div th:each="f: ${files}" class="file-item">
+                    <div class="file-info">
+                        <div class="file-name">[[${f.getFileName()}]]</div>
+                        <div class="file-meta">
+                            <span>大小: [[${f.getSize()}]] MB</span> | 
+                            <span>上传时间: [[${f.getTime()}]]</span>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <a th:if="${isOpenDownload}" th:href="@{/download(fileName=${f.getFileName()})}" class="btn btn-primary">下载</a>
+                        <a th:if="${isOpenDelete}" href="#" th:data-href="@{/delete(fileName=${f.getFileName()})}" class="btn btn-danger delete-btn">删除</a>
+                    </div>
+                </div>
+                <div th:if="${files.size() == 0}" style="text-align: center; padding: 40px; color: #666;">
+                    暂无文件
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>文件共享系统 &copy; 2026</p>
+        </div>
+    </div>
+    
+    <script>
+        let data = [];
+        let canSubmit = true;
+        let fileInput = document.getElementById('fileInput');
+        
+        // 拖拽功能
+        const fileInputContainer = document.querySelector('.file-input-container');
+        
+        fileInputContainer.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#667eea';
+        });
+        
+        fileInputContainer.addEventListener('dragleave', function() {
+            this.style.borderColor = '#ddd';
+        });
+        
+        fileInputContainer.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.style.borderColor = '#ddd';
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        fileInput.addEventListener('change', function() {
+            handleFiles(this.files);
+        });
+        
+        function handleFiles(files) {
+            let len = files.length;
+            console.log(files);
+            console.log("长度是：" + len);
+            
+            data = [];
+            for (let i = 0; i < files.length; i++) {
+                data.push(files[i]);
+            }
+            
+            //展示列表
+            document.getElementById('content').innerHTML = buildLi(data);
+            
+            let sub = document.getElementById('sub');
+            if (!canSubmit) {
+                sub.innerHTML = "不可上传";
+                sub.setAttribute("disabled", "true");
+            } else {
+                sub.innerHTML = "上传文件";
+                sub.removeAttribute("disabled");
+            }
+            canSubmit = true;
+        }
+        
+        function buildLi(data) {
+            let str = '';
+            let totalFileSize = 0;
+            //计算剩余空间是否充足，进行提示
+            let maxFileSize = [[${maxFileSize}]];
+            
+            for (let f of data) {
+                let fileSize = (f.size / 1024 / 1024);
+                if (maxFileSize > fileSize) {
+                    str += '<li style="color: green">名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB</li>';
+                } else {
+                    //单个文件超过限制
+                    canSubmit = false;
+                    str += '<li style="color: darkred">名称：' + f.name + '----大小:' + fileSize.toFixed(2) + 'MB, 超过最大单个文件上传限制，将会上传失败！</li>';
+                }
+                totalFileSize += fileSize;
+            }
+            
+            str = '<li>待上传文件总大小：' + totalFileSize.toFixed(2) + 'MB</li>' + str;
+            
+            //计算剩余空间是否充足，进行提示
+            let remainSpace = [[${remainSpace}]];
+            if (remainSpace < totalFileSize) {
+                let number = (totalFileSize - remainSpace);
+                canSubmit = false;
+                str = '<li style="color: darkred;font-size: 16px">警告:待上传文件总大小超过剩余可用空间，可能会有部分文件上传失败!缺少' + number.toFixed(2) + "MB空间</li>" + str;
+            }
+            
+            //计算单此请求空间是否小于配置要求
+            let maxRequestSize = [[${maxRequestSize}]];
+            if (maxRequestSize < totalFileSize) {
+                let number = (totalFileSize - maxRequestSize);
+                canSubmit = false;
+                str = '<li style="color: darkred;font-size: 16px">警告:待上传文件总大小超过单次最大上传数，超过' + number.toFixed(2) + "MB空间</li>" + str;
+            }
+            
+            return str;
+        }
+        
+        // 模态框功能
+        const modal = document.getElementById('uploadModal');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const closeBtn2 = document.getElementsByClassName('close-btn')[0];
+        
+        // 打开模态框
+        uploadBtn.onclick = function() {
+            modal.style.display = 'block';
+        }
+        
+        // 关闭模态框
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        closeBtn2.onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // 确认模态框功能
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const confirmCloseBtn = confirmModal.querySelector('.close');
+        const confirmCancelBtn = confirmModal.querySelector('.close-btn');
+        let confirmActionUrl = '';
+        
+        // 打开确认模态框
+        function openConfirmModal(message, url) {
+            confirmMessage.textContent = message;
+            confirmActionUrl = url;
+            confirmModal.style.display = 'block';
+        }
+        
+        // 关闭确认模态框
+        function closeConfirmModal() {
+            confirmModal.style.display = 'none';
+        }
+        
+        // 确认按钮点击事件
+        confirmBtn.addEventListener('click', function() {
+            if (confirmActionUrl) {
+                window.location.href = confirmActionUrl;
+            }
+            closeConfirmModal();
+        });
+        
+        // 关闭按钮点击事件
+        confirmCloseBtn.addEventListener('click', closeConfirmModal);
+        confirmCancelBtn.addEventListener('click', closeConfirmModal);
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(event) {
+            if (event.target == confirmModal) {
+                closeConfirmModal();
+            }
+        });
+        
+        // 删除确认功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 单个文件删除确认
+            const deleteBtns = document.querySelectorAll('.delete-btn');
+            deleteBtns.forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const deleteUrl = this.getAttribute('data-href');
+                    openConfirmModal('确定要删除这个文件吗？', deleteUrl);
+                });
+            });
+            
+            // 删除所有文件确认
+            const deleteAllBtn = document.querySelector('.delete-all-btn');
+            if (deleteAllBtn) {
+                deleteAllBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const deleteUrl = this.getAttribute('data-href');
+                    openConfirmModal('确定要删除所有文件吗？此操作不可恢复！', deleteUrl);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -116,6 +116,11 @@ public class FileController {
         }
         File file = new File(filePath);
         FileUtils.cleanDirectory(file);
+        // 根据请求来源决定重定向目标
+        String referer = request.getHeader("Referer");
+        if (referer != null && referer.contains("/new")) {
+            return "redirect:/new";
+        }
         return "redirect:/";
     }
 
@@ -198,6 +203,11 @@ public class FileController {
         double totalTimeSeconds = stopWatch.getTotalTimeSeconds();
         LOGGER.info("本次上传共耗时:" + totalTimeSeconds + "秒！");
         model.addAttribute("time", totalTimeSeconds);
+        // 根据请求来源决定重定向目标
+        String referer = request.getHeader("Referer");
+        if (referer != null && referer.contains("/new")) {
+            return "redirect:/new?time=" + totalTimeSeconds;
+        }
         return "redirect:/?time=" + totalTimeSeconds;
     }
 
@@ -329,6 +339,15 @@ public class FileController {
      */
     @GetMapping("/")
     public String listFiles(Model model) {
+        return listFilesCommon(model, "new_index");
+    }
+    
+    @GetMapping("/old")
+    public String listFilesOld(Model model) {
+        return listFilesCommon(model, "index");
+    }
+    
+    private String listFilesCommon(Model model, String viewName) {
         File file = new File(filePath);
         if (!file.exists()) {
             file.mkdirs();
@@ -355,7 +374,7 @@ public class FileController {
         model.addAttribute("isOpenDownload", isOpenDownload);
         model.addAttribute("isOpenDownloadAll", isOpenDownloadAll);
         model.addAttribute("isOpenUpload", isOpenUpload);
-        return "index";
+        return viewName;
     }
 
     private TreeSet<FileInfo> getFileInfos(File[] files) {
@@ -435,6 +454,11 @@ public class FileController {
         System.gc();
         File file = new File(filePath, fileName);
         FileUtils.forceDelete(file);
+        // 根据请求来源决定重定向目标
+        String referer = request.getHeader("Referer");
+        if (referer != null && referer.contains("/new")) {
+            return "redirect:/new";
+        }
         return "redirect:/";
     }
 }
