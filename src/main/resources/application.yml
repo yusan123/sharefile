@@ -6,8 +6,8 @@ server:
 spring:
   servlet:
     multipart:
-      max-file-size: 100MB
-      max-request-size: 1000MB
+      max-file-size: 10MB
+      max-request-size: 20MB
   thymeleaf:
     cache: false
   mvc:
@@ -36,7 +36,7 @@ logging:
 #自定义配置
 file:
   path: D:\root #作为存储的目录
-  maxSpace: 10240  #可以使用的最大空间MB
+  maxSpace: 100  #可以使用的最大空间MB
   isOpenComplexChar: true #是否开启支持上传包含中文特殊字符文件名的文件,关闭后，包含特殊字符的文件名会变为uuid
   isOpenDelete: true  #是否开启删除
   isOpenDeleteAll: false  #是否开启删除所有文件
@@ -46,6 +46,6 @@ file:
 
 sa:
   name: root
-  pwd: test@123
+  pwd: 1234
 
 

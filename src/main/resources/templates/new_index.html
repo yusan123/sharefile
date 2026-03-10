@@ -352,7 +352,7 @@
         }
         
         /* 待上传文件列表样式 */
-        #content {
+        .upload-file-list {
             margin: 20px 0;
             padding: 15px;
             background-color: #f8f9fa;
@@ -360,10 +360,23 @@
             border-left: 4px solid #667eea;
         }
         
-        #content li {
+        .upload-file-list li {
             margin: 8px 0;
-            padding: 5px 0;
+            padding: 8px 12px;
             list-style-type: none;
+            background-color: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-file-list li:hover {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+        
+        .upload-file-list li:nth-child(odd) {
+            background-color: #f9f9f9;
         }
         
         @media (max-width: 768px) {
@@ -475,7 +488,7 @@
                                 <label for="fileInput" class="file-input-label">选择文件</label>
                                 <p>或直接拖拽文件到此处</p>
                             </div>
-                            <div id="content"></div>
+                            <div id="content" class="upload-file-list"></div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary close-btn">取消</button>
                                 <button type="submit" class="btn btn-primary" id="sub">上传文件</button>
