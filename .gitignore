@@ -38,3 +38,6 @@ logs
 log
 *.tgz
 
+/.agents
+/.trae/
+/skills-lock.json
