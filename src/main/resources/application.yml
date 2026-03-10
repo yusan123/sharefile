@@ -44,4 +44,8 @@ file:
   isOpenDownload: true  #是否开启下载
   isOpenDownloadAll: true #是否开启下载所有文件
 
+sa:
+  name: root
+  pwd: test@123
+
 
