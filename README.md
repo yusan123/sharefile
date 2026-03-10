@@ -2,7 +2,7 @@
 ### 可以实现指定大小的磁盘空间作为共享网盘，可以单独设置开启上传下载，删除，打包下载，批量删除等功能.
 ### 主要技术使用```springboot```和```thymeleaf```,功能较少前后台不分离，欢迎使用.
 
-![图片展示](https://github.com/yusan123/sharefile/raw/master/pics/sharefile_error_new.jpg)
+![图片展示](https://github.com/yusan123/sharefile/raw/master/pics/sharefile_error_new.png)
 
 ### A designated size of disk space can be used as a shared network disk, and upload and download, delete, package download, batch delete and other functions can be individually set.
 ### The main technology uses springboot and thymeleaf, with less functions and no separation of front and back. Welcome to use.
