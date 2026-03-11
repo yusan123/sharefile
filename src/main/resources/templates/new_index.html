@@ -68,7 +68,6 @@
             margin-bottom: 30px;
             box-shadow: var(--shadow-xl);
             position: relative;
-            overflow: hidden;
         }
         
         .header::before {
@@ -111,6 +110,13 @@
             line-height: 1.2;
         }
         
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: relative;
+        }
+        
         .nav-links {
             display: flex;
             gap: 10px;
@@ -131,6 +137,81 @@
             background-color: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
+        }
+        
+        /* Theme Switcher */
+        .theme-switcher {
+            position: relative;
+        }
+        
+        .theme-btn {
+            padding: 10px 16px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .theme-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .theme-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background-color: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            padding: 8px;
+            z-index: 9999;
+            min-width: 200px;
+            display: none;
+        }
+        
+        .theme-dropdown.show {
+            display: block;
+            animation: dropdownFadeIn 0.3s ease;
+        }
+        
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .theme-option {
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.875rem;
+            color: var(--gray-800);
+        }
+        
+        .theme-option:hover {
+            background-color: var(--gray-100);
+        }
+        
+        .theme-option.active {
+            background-color: var(--primary);
+            color: white;
         }
         
         /* Alert */
@@ -740,8 +821,25 @@
         <div class="header">
             <div class="header-content">
                 <h1 class="header-title">文件共享系统</h1>
-                <div class="nav-links">
-                    <a href="/old" class="nav-link">原始界面</a>
+                <div class="header-actions">
+                    <div class="theme-switcher">
+                        <button class="theme-btn" id="themeBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                            主题
+                        </button>
+                        <div class="theme-dropdown" id="themeDropdown">
+                            <div class="theme-option active" data-theme="modern">现代风格</div>
+                            <div class="theme-option" data-theme="brutalism">极简 Brutalism</div>
+                            <div class="theme-option" data-theme="retro-futuristic">复古未来主义</div>
+                            <div class="theme-option" data-theme="industrial">工业风</div>
+                            <div class="theme-option" data-theme="art-deco">艺术装饰风</div>
+                        </div>
+                    </div>
+                    <div class="nav-links">
+                        <a href="/old" class="nav-link">原始界面</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -935,6 +1033,159 @@
     </div>
     
     <script>
+        // Theme definitions
+        const themes = {
+            modern: {
+                primary: '#3b82f6',
+                primaryDark: '#2563eb',
+                secondary: '#8b5cf6',
+                success: '#10b981',
+                warning: '#f59e0b',
+                danger: '#ef4444',
+                dark: '#1e293b',
+                light: '#f8fafc',
+                fontFamily: '"Inter", sans-serif',
+                headerBg: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                cardBg: 'white',
+                cardShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                borderRadius: '1rem'
+            },
+            brutalism: {
+                primary: '#ff3c00',
+                primaryDark: '#cc3000',
+                secondary: '#0066ff',
+                success: '#00cc00',
+                warning: '#ffcc00',
+                danger: '#ff0000',
+                dark: '#000000',
+                light: '#ffffff',
+                fontFamily: '"Arial", sans-serif',
+                headerBg: '#ff3c00',
+                cardBg: 'white',
+                cardShadow: '4px 4px 0px #000000',
+                borderRadius: '0'
+            },
+            'retro-futuristic': {
+                primary: '#00ffff',
+                primaryDark: '#00cccc',
+                secondary: '#ff00ff',
+                success: '#00ff00',
+                warning: '#ffff00',
+                danger: '#ff0000',
+                dark: '#000033',
+                light: '#000066',
+                fontFamily: '"Courier New", monospace',
+                headerBg: 'linear-gradient(135deg, #000033 0%, #000066 100%)',
+                cardBg: '#000033',
+                cardShadow: '0 0 10px #00ffff',
+                borderRadius: '0.5rem'
+            },
+            industrial: {
+                primary: '#8b8b8b',
+                primaryDark: '#666666',
+                secondary: '#a87c45',
+                success: '#4caf50',
+                warning: '#ff9800',
+                danger: '#f44336',
+                dark: '#333333',
+                light: '#f0f0f0',
+                fontFamily: '"Roboto", sans-serif',
+                headerBg: '#333333',
+                cardBg: '#f0f0f0',
+                cardShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                borderRadius: '0.25rem'
+            },
+            'art-deco': {
+                primary: '#d4af37',
+                primaryDark: '#b8941f',
+                secondary: '#8a2be2',
+                success: '#2e8b57',
+                warning: '#ff6347',
+                danger: '#dc143c',
+                dark: '#2f2f2f',
+                light: '#f5f5f5',
+                fontFamily: '"Playfair Display", serif',
+                headerBg: 'linear-gradient(135deg, #2f2f2f 0%, #4a4a4a 100%)',
+                cardBg: 'white',
+                cardShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                borderRadius: '0.75rem'
+            }
+        };
+        
+        // Theme switcher functionality
+        const themeBtn = document.getElementById('themeBtn');
+        const themeDropdown = document.getElementById('themeDropdown');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        
+        // Toggle theme dropdown
+        themeBtn.addEventListener('click', function() {
+            themeDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.theme-switcher')) {
+                themeDropdown.classList.remove('show');
+            }
+        });
+        
+        // Apply theme
+        function applyTheme(themeName) {
+            const theme = themes[themeName];
+            if (!theme) return;
+            
+            // Update CSS variables
+            document.documentElement.style.setProperty('--primary', theme.primary);
+            document.documentElement.style.setProperty('--primary-dark', theme.primaryDark);
+            document.documentElement.style.setProperty('--secondary', theme.secondary);
+            document.documentElement.style.setProperty('--success', theme.success);
+            document.documentElement.style.setProperty('--warning', theme.warning);
+            document.documentElement.style.setProperty('--danger', theme.danger);
+            document.documentElement.style.setProperty('--dark', theme.dark);
+            document.documentElement.style.setProperty('--light', theme.light);
+            
+            // Update header background
+            const header = document.querySelector('.header');
+            header.style.background = theme.headerBg;
+            
+            // Update cards
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                card.style.backgroundColor = theme.cardBg;
+                card.style.boxShadow = theme.cardShadow;
+                card.style.borderRadius = theme.borderRadius;
+            });
+            
+            // Update font family
+            document.body.style.fontFamily = theme.fontFamily;
+            
+            // Update theme options
+            themeOptions.forEach(option => {
+                option.classList.remove('active');
+                if (option.dataset.theme === themeName) {
+                    option.classList.add('active');
+                }
+            });
+            
+            // Save theme to local storage
+            localStorage.setItem('theme', themeName);
+        }
+        
+        // Theme option click event
+        themeOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                const themeName = this.dataset.theme;
+                applyTheme(themeName);
+                themeDropdown.classList.remove('show');
+            });
+        });
+        
+        // Load saved theme
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'modern';
+            applyTheme(savedTheme);
+        });
+        
         // Modal functionality
         const uploadModal = document.getElementById('uploadModal');
         const uploadBtn = document.getElementById('uploadBtn');
