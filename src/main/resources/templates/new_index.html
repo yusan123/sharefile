@@ -1078,7 +1078,8 @@
                 headerBg: 'linear-gradient(135deg, #000033 0%, #000066 100%)',
                 cardBg: '#000033',
                 cardShadow: '0 0 10px #00ffff',
-                borderRadius: '0.5rem'
+                borderRadius: '0.5rem',
+                textColor: '#ffffff'
             },
             industrial: {
                 primary: '#8b8b8b',
@@ -1143,6 +1144,87 @@
             document.documentElement.style.setProperty('--danger', theme.danger);
             document.documentElement.style.setProperty('--dark', theme.dark);
             document.documentElement.style.setProperty('--light', theme.light);
+            
+            // Update text color if specified in theme
+            if (theme.textColor) {
+                document.body.style.color = theme.textColor;
+                // Update card titles and other text elements
+                const cardTitles = document.querySelectorAll('.card-title');
+                cardTitles.forEach(title => {
+                    title.style.color = theme.textColor;
+                });
+                const statLabels = document.querySelectorAll('.stat-label');
+                statLabels.forEach(label => {
+                    label.style.color = theme.textColor;
+                });
+                const progressLabels = document.querySelectorAll('.progress-label');
+                progressLabels.forEach(label => {
+                    label.style.color = theme.textColor;
+                });
+                const fileNames = document.querySelectorAll('.file-name');
+                fileNames.forEach(name => {
+                    name.style.color = theme.textColor;
+                });
+                const fileMetas = document.querySelectorAll('.file-meta');
+                fileMetas.forEach(meta => {
+                    meta.style.color = theme.textColor;
+                });
+                const emptyStateTitles = document.querySelectorAll('.empty-state-title');
+                emptyStateTitles.forEach(title => {
+                    title.style.color = theme.textColor;
+                });
+                const emptyStateDescriptions = document.querySelectorAll('.empty-state-description');
+                emptyStateDescriptions.forEach(desc => {
+                    desc.style.color = theme.textColor;
+                });
+                const footerLinks = document.querySelectorAll('.footer-link');
+                footerLinks.forEach(link => {
+                    link.style.color = theme.textColor;
+                });
+                const footerText = document.querySelector('.footer p');
+                if (footerText) {
+                    footerText.style.color = theme.textColor;
+                }
+            } else {
+                // Reset to default text color
+                document.body.style.color = '';
+                const cardTitles = document.querySelectorAll('.card-title');
+                cardTitles.forEach(title => {
+                    title.style.color = '';
+                });
+                const statLabels = document.querySelectorAll('.stat-label');
+                statLabels.forEach(label => {
+                    label.style.color = '';
+                });
+                const progressLabels = document.querySelectorAll('.progress-label');
+                progressLabels.forEach(label => {
+                    label.style.color = '';
+                });
+                const fileNames = document.querySelectorAll('.file-name');
+                fileNames.forEach(name => {
+                    name.style.color = '';
+                });
+                const fileMetas = document.querySelectorAll('.file-meta');
+                fileMetas.forEach(meta => {
+                    meta.style.color = '';
+                });
+                const emptyStateTitles = document.querySelectorAll('.empty-state-title');
+                emptyStateTitles.forEach(title => {
+                    title.style.color = '';
+                });
+                const emptyStateDescriptions = document.querySelectorAll('.empty-state-description');
+                emptyStateDescriptions.forEach(desc => {
+                    desc.style.color = '';
+                });
+                const footerLinks = document.querySelectorAll('.footer-link');
+                footerLinks.forEach(link => {
+                    link.style.color = '';
+                });
+                const footerText = document.querySelector('.footer p');
+                if (footerText) {
+                    footerText.style.color = '';
+                }
+            }
             
             // Update header background
             const header = document.querySelector('.header');
