@@ -806,21 +806,163 @@
             transform: rotate(90deg);
         }
 
-        /* Preview Modal */
+        /* Preview Modal - Cosmic Neon Style */
         .preview-modal-content {
-            max-width: 900px;
+            max-width: 1000px;
             width: 95%;
-            max-height: 90vh;
+            max-height: 92vh;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            animation: previewModalEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .preview-modal-body {
-            padding: 0;
-            max-height: 75vh;
-            overflow: auto;
+        @keyframes previewModalEnter {
+            from {
+                opacity: 0;
+                transform: scale(0.8) rotateX(15deg) translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateX(0) translateY(0);
+            }
+        }
+
+        .preview-modal-wrapper {
+            position: relative;
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.98));
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                0 0 80px rgba(59, 130, 246, 0.15),
+                0 0 120px rgba(139, 92, 246, 0.1),
+                0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-modal-wrapper::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            animation: cosmicRotate 20s linear infinite;
+            pointer-events: none;
+        }
+
+        @keyframes cosmicRotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .preview-header {
+            position: relative;
+            padding: 20px 28px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .preview-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.5), rgba(139, 92, 246, 0.5), transparent);
+        }
+
+        .preview-file-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .preview-file-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--gray-900);
+            color: white;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 4px 25px rgba(59, 130, 246, 0.6), 0 0 40px rgba(139, 92, 246, 0.3); }
+        }
+
+        .preview-file-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: white;
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.02em;
+        }
+
+        .preview-file-type {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 2px;
+        }
+
+        .preview-close {
+            position: relative;
+            z-index: 1;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .preview-modal-body {
+            position: relative;
+            padding: 0;
+            max-height: 75vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-content-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .preview-loading {
@@ -828,18 +970,22 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px;
-            color: var(--gray-400);
+            padding: 80px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .preview-loading .loading {
+            width: 50px;
+            height: 50px;
+            border-width: 3px;
+            border-top-color: var(--primary);
+            border-right-color: var(--secondary);
         }
 
         .preview-loading p {
-            margin-top: 16px;
-            font-size: 0.875rem;
-        }
-
-        .preview-content-wrapper {
-            width: 100%;
-            height: 100%;
+            margin-top: 20px;
+            font-size: 0.9375rem;
+            letter-spacing: 0.05em;
         }
 
         .preview-image {
@@ -847,27 +993,55 @@
             max-height: 75vh;
             object-fit: contain;
             display: block;
-            margin: 0 auto;
+            animation: imageReveal 0.6s ease-out;
+        }
+
+        @keyframes imageReveal {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+                filter: blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
         }
 
         .preview-text {
             width: 100%;
             height: 75vh;
             overflow: auto;
-            background: white;
-            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            background: rgba(255, 255, 255, 0.03);
+            font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
             font-size: 0.8125rem;
-            line-height: 1.6;
-            padding: 24px;
+            line-height: 1.7;
+            padding: 28px 32px;
             white-space: pre-wrap;
             word-break: break-all;
-            color: var(--gray-800);
+            color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+        }
+
+        .preview-text::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .preview-text::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .preview-text::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--primary), var(--secondary));
+            border-radius: 4px;
         }
 
         .preview-pdf {
             width: 100%;
             height: 75vh;
             border: none;
+            background: rgba(0, 0, 0, 0.3);
         }
 
         .preview-video {
@@ -875,41 +1049,89 @@
             max-height: 75vh;
             display: block;
             margin: 0 auto;
+            border-radius: 12px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
         }
 
         .preview-audio {
             width: 100%;
             max-width: 500px;
             display: block;
-            margin: 40px auto;
+            margin: 60px auto;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.3));
+        }
+
+        .preview-audio::-webkit-media-controls-panel {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
         }
 
         .preview-unsupported {
             text-align: center;
-            padding: 80px 40px;
-            color: var(--gray-400);
+            padding: 100px 60px;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .preview-unsupported-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 24px;
-            opacity: 0.5;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 28px;
+            opacity: 0.4;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
 
         .preview-unsupported-text {
-            font-size: 1.125rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: var(--gray-600);
-            margin-bottom: 8px;
+            color: white;
+            margin-bottom: 10px;
+            font-family: 'Playfair Display', serif;
         }
 
         .preview-unsupported-hint {
             font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.02em;
         }
 
-        .preview-close {
-            font-size: 32px;
+        .preview-footer {
+            padding: 16px 28px;
+            background: rgba(0, 0, 0, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .preview-action-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8125rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-action-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .preview-action-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .modal-body {
@@ -1315,14 +1537,37 @@
         <!-- Preview Modal -->
         <div id="previewModal" class="modal">
             <div class="modal-content preview-modal-content">
-                <div class="modal-header">
-                    <h3 class="modal-title" id="previewFileName">文件预览</h3>
-                    <span class="close preview-close">&times;</span>
-                </div>
-                <div class="modal-body preview-modal-body" id="previewContent">
-                    <div class="preview-loading">
-                        <div class="loading"></div>
-                        <p>加载中...</p>
+                <div class="preview-modal-wrapper">
+                    <div class="preview-header">
+                        <div class="preview-file-info">
+                            <div class="preview-file-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="preview-file-name" id="previewFileName">文件预览</div>
+                                <div class="preview-file-type" id="previewFileType">Unknown</div>
+                            </div>
+                        </div>
+                        <button class="preview-close" id="previewClose">&times;</button>
+                    </div>
+                    <div class="preview-modal-body" id="previewContent">
+                        <div class="preview-loading">
+                            <div class="loading"></div>
+                            <p>正在加载文件...</p>
+                        </div>
+                    </div>
+                    <div class="preview-footer">
+                        <button class="preview-action-btn" id="previewDownload">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            下载文件
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1763,7 +2008,21 @@
             const previewModal = document.getElementById('previewModal');
             const previewContent = document.getElementById('previewContent');
             const previewFileName = document.getElementById('previewFileName');
-            const previewCloseBtn = previewModal.querySelector('.preview-close');
+            const previewFileType = document.getElementById('previewFileType');
+            const previewCloseBtn = document.getElementById('previewClose');
+            const previewDownloadBtn = document.getElementById('previewDownload');
+            let currentPreviewFile = '';
+
+            // File type mapping
+            const fileTypeMap = {
+                'png': 'PNG 图片', 'jpg': 'JPEG 图片', 'jpeg': 'JPEG 图片',
+                'gif': 'GIF 图片', 'bmp': 'BMP 图片', 'webp': 'WebP 图片',
+                'pdf': 'PDF 文档', 'txt': '文本文件', 'log': '日志文件',
+                'md': 'Markdown', 'json': 'JSON 数据', 'xml': 'XML 文档',
+                'html': 'HTML 页面', 'css': 'CSS 样式', 'js': 'JavaScript',
+                'mp4': 'MP4 视频', 'webm': 'WebM 视频', 'ogg': 'OGG 音视频',
+                'mp3': 'MP3 音频', 'wav': 'WAV 音频'
+            };
 
             // Click on filename to preview
             const fileNameElements = document.querySelectorAll('.file-name-text');
@@ -1788,13 +2047,15 @@
             });
 
             function openPreviewModal(fileName) {
+                currentPreviewFile = fileName;
+                const ext = fileName.split('.').pop().toLowerCase();
                 previewFileName.textContent = fileName;
-                previewContent.innerHTML = '<div class="preview-loading"><div class="loading"></div><p>加载中...</p></div>';
+                previewFileType.textContent = fileTypeMap[ext] || '未知文件';
+                previewContent.innerHTML = '<div class="preview-loading"><div class="loading"></div><p>正在加载文件...</p></div>';
                 previewModal.style.display = 'block';
 
                 // Fetch preview content
                 const previewUrl = '/preview?fileName=' + encodeURIComponent(fileName);
-                const ext = fileName.split('.').pop().toLowerCase();
 
                 // For images, use img tag
                 if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) {
@@ -1843,6 +2104,13 @@
             previewModal.addEventListener('click', function(e) {
                 if (e.target === previewModal) {
                     previewModal.style.display = 'none';
+                }
+            });
+
+            // Download button in preview modal
+            previewDownloadBtn.addEventListener('click', function() {
+                if (currentPreviewFile) {
+                    window.location.href = '/download?fileName=' + encodeURIComponent(currentPreviewFile);
                 }
             });
         });
