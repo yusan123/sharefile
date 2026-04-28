@@ -348,6 +348,60 @@ public class FileController {
         LOGGER.info("成功下载文件: " + fileName);
     }
 
+    /**
+     * 在线预览文件
+     */
+    @GetMapping("/preview")
+    public void preview(@RequestParam String fileName, HttpServletResponse response) throws Exception {
+        validateFilePath(fileName);
+        LOGGER.info("开始预览文件: " + fileName);
+        File file = new File(filePath, fileName);
+        if (!file.exists()) {
+            throw new ShareFileException("文件不存在");
+        }
+
+        String contentType = getContentType(fileName);
+        response.setContentType(contentType);
+        response.setHeader("Content-Disposition", "inline;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
+
+        FileInputStream fis = null;
+        OutputStream os = null;
+        try {
+            fis = new FileInputStream(file);
+            os = response.getOutputStream();
+            FileCopyUtils.copy(fis, os);
+        } finally {
+            try {
+                if (fis != null) fis.close();
+                if (os != null) os.close();
+            } catch (IOException e) {
+                LOGGER.warn("关闭流失败", e);
+            }
+        }
+    }
+
+    /**
+     * 根据文件名获取 Content-Type
+     */
+    private String getContentType(String fileName) {
+        String lowerName = fileName.toLowerCase();
+        if (lowerName.endsWith(".pdf")) {
+            return "application/pdf";
+        } else if (lowerName.endsWith(".png") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") ||
+                   lowerName.endsWith(".gif") || lowerName.endsWith(".bmp") || lowerName.endsWith(".webp")) {
+            return "image/" + (lowerName.endsWith(".jpg") ? "jpeg" : lowerName.substring(lowerName.lastIndexOf(".") + 1));
+        } else if (lowerName.endsWith(".txt") || lowerName.endsWith(".log") || lowerName.endsWith(".md") ||
+                   lowerName.endsWith(".json") || lowerName.endsWith(".xml") || lowerName.endsWith(".html") ||
+                   lowerName.endsWith(".css") || lowerName.endsWith(".js")) {
+            return "text/plain;charset=UTF-8";
+        } else if (lowerName.endsWith(".mp4")) {
+            return "video/mp4";
+        } else if (lowerName.endsWith(".mp3") || lowerName.endsWith(".wav") || lowerName.endsWith(".ogg")) {
+            return "audio/" + lowerName.substring(lowerName.lastIndexOf(".") + 1);
+        }
+        return "application/octet-stream";
+    }
+
     private void downloadFile(String fileName, HttpServletResponse response, File file) {
         FileInputStream fis = null;
         OutputStream os = null;

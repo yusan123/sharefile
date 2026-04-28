@@ -750,7 +750,7 @@
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(4px);
         }
-        
+
         .modal-content {
             background-color: white;
             margin: 5% auto;
@@ -763,7 +763,7 @@
             animation: modalFadeIn 0.3s ease;
             overflow: hidden;
         }
-        
+
         @keyframes modalFadeIn {
             from {
                 opacity: 0;
@@ -774,7 +774,7 @@
                 transform: translateY(0) scale(1);
             }
         }
-        
+
         .modal-header {
             padding: 24px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -783,14 +783,14 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .modal-title {
             font-family: 'Playfair Display', serif;
             font-size: 1.5rem;
             font-weight: 600;
             margin: 0;
         }
-        
+
         .close {
             color: white;
             float: right;
@@ -805,7 +805,113 @@
             color: var(--gray-200);
             transform: rotate(90deg);
         }
-        
+
+        /* Preview Modal */
+        .preview-modal-content {
+            max-width: 900px;
+            width: 95%;
+            max-height: 90vh;
+        }
+
+        .preview-modal-body {
+            padding: 0;
+            max-height: 75vh;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--gray-900);
+        }
+
+        .preview-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: var(--gray-400);
+        }
+
+        .preview-loading p {
+            margin-top: 16px;
+            font-size: 0.875rem;
+        }
+
+        .preview-content-wrapper {
+            width: 100%;
+            height: 100%;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 75vh;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .preview-text {
+            width: 100%;
+            height: 75vh;
+            overflow: auto;
+            background: white;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            padding: 24px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: var(--gray-800);
+        }
+
+        .preview-pdf {
+            width: 100%;
+            height: 75vh;
+            border: none;
+        }
+
+        .preview-video {
+            max-width: 100%;
+            max-height: 75vh;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .preview-audio {
+            width: 100%;
+            max-width: 500px;
+            display: block;
+            margin: 40px auto;
+        }
+
+        .preview-unsupported {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--gray-400);
+        }
+
+        .preview-unsupported-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            opacity: 0.5;
+        }
+
+        .preview-unsupported-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            margin-bottom: 8px;
+        }
+
+        .preview-unsupported-hint {
+            font-size: 0.875rem;
+        }
+
+        .preview-close {
+            font-size: 32px;
+        }
+
         .modal-body {
             padding: 24px;
         }
@@ -1136,7 +1242,7 @@
                     <span>操作</span>
                 </div>
                 <div th:each="f: ${files}" class="file-item" th:data-name="${f.getFileName()}">
-                    <div class="file-name">
+                    <div class="file-name" th:data-filename="${f.getFileName()}">
                         <div class="file-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -1146,7 +1252,7 @@
                                 <polyline points="10 9 9 9 8 9"></polyline>
                             </svg>
                         </div>
-                        [[${f.getFileName()}]]
+                        <span class="file-name-text" th:data-filename="${f.getFileName()}">[[${f.getFileName()}]]</span>
                     </div>
                     <div class="file-meta">[[${f.getSize()}]] MB</div>
                     <div class="file-meta">[[${f.getTime()}]]</div>
@@ -1205,7 +1311,23 @@
                 </div>
             </div>
         </div>
-        
+
+        <!-- Preview Modal -->
+        <div id="previewModal" class="modal">
+            <div class="modal-content preview-modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="previewFileName">文件预览</h3>
+                    <span class="close preview-close">&times;</span>
+                </div>
+                <div class="modal-body preview-modal-body" id="previewContent">
+                    <div class="preview-loading">
+                        <div class="loading"></div>
+                        <p>加载中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Confirm Modal -->
         <div id="confirmModal" class="modal">
             <div class="modal-content">
@@ -1626,7 +1748,7 @@
                     openConfirmModal('确定要删除这个文件吗？', deleteUrl);
                 });
             });
-            
+
             // Delete all files confirmation
             const deleteAllBtn = document.querySelector('.delete-all-btn');
             if (deleteAllBtn) {
@@ -1636,6 +1758,93 @@
                     openConfirmModal('确定要删除所有文件吗？此操作不可恢复！', deleteUrl);
                 });
             }
+
+            // File preview functionality
+            const previewModal = document.getElementById('previewModal');
+            const previewContent = document.getElementById('previewContent');
+            const previewFileName = document.getElementById('previewFileName');
+            const previewCloseBtn = previewModal.querySelector('.preview-close');
+
+            // Click on filename to preview
+            const fileNameElements = document.querySelectorAll('.file-name-text');
+            fileNameElements.forEach(function(elem) {
+                elem.style.cursor = 'pointer';
+                elem.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const fileName = this.getAttribute('data-filename');
+                    openPreviewModal(fileName);
+                });
+            });
+
+            // Also make entire file-name clickable
+            const fileNameDivs = document.querySelectorAll('.file-name');
+            fileNameDivs.forEach(function(div) {
+                div.style.cursor = 'pointer';
+                div.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('file-name-text')) return;
+                    const fileName = this.getAttribute('data-filename');
+                    if (fileName) openPreviewModal(fileName);
+                });
+            });
+
+            function openPreviewModal(fileName) {
+                previewFileName.textContent = fileName;
+                previewContent.innerHTML = '<div class="preview-loading"><div class="loading"></div><p>加载中...</p></div>';
+                previewModal.style.display = 'block';
+
+                // Fetch preview content
+                const previewUrl = '/preview?fileName=' + encodeURIComponent(fileName);
+                const ext = fileName.split('.').pop().toLowerCase();
+
+                // For images, use img tag
+                if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'].includes(ext)) {
+                    previewContent.innerHTML = '<div class="preview-content-wrapper"><img src="' + previewUrl + '" class="preview-image" alt="' + fileName + '"></div>';
+                }
+                // For text-based files
+                else if (['txt', 'log', 'md', 'json', 'xml', 'html', 'css', 'js'].includes(ext)) {
+                    fetch(previewUrl)
+                        .then(function(response) { return response.text(); })
+                        .then(function(text) {
+                            previewContent.innerHTML = '<pre class="preview-text">' + escapeHtml(text) + '</pre>';
+                        })
+                        .catch(function() {
+                            previewContent.innerHTML = '<div class="preview-unsupported"><svg class="preview-unsupported-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div class="preview-unsupported-text">无法预览此文件</div><div class="preview-unsupported-hint">请下载后查看</div></div>';
+                        });
+                }
+                // For PDF
+                else if (ext === 'pdf') {
+                    previewContent.innerHTML = '<div class="preview-content-wrapper"><iframe src="' + previewUrl + '" class="preview-pdf"></iframe></div>';
+                }
+                // For video
+                else if (['mp4', 'webm', 'ogg'].includes(ext)) {
+                    previewContent.innerHTML = '<div class="preview-content-wrapper"><video controls class="preview-video"><source src="' + previewUrl + '" type="video/' + ext + '">您的浏览器不支持视频预览</video></div>';
+                }
+                // For audio
+                else if (['mp3', 'wav', 'ogg'].includes(ext)) {
+                    previewContent.innerHTML = '<div class="preview-content-wrapper"><audio controls class="preview-audio"><source src="' + previewUrl + '" type="audio/' + ext + '">您的浏览器不支持音频预览</audio></div>';
+                }
+                // Unsupported
+                else {
+                    previewContent.innerHTML = '<div class="preview-unsupported"><svg class="preview-unsupported-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><div class="preview-unsupported-text">此文件类型不支持预览</div><div class="preview-unsupported-hint">请下载后查看 | 支持：图片、文本、PDF、音视频</div></div>';
+                }
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Close preview modal
+            previewCloseBtn.addEventListener('click', function() {
+                previewModal.style.display = 'none';
+            });
+
+            previewModal.addEventListener('click', function(e) {
+                if (e.target === previewModal) {
+                    previewModal.style.display = 'none';
+                }
+            });
         });
         
         // File upload functionality
