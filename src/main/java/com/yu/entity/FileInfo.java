@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class FileInfo extends BaseRowModel implements Comparable, Serializable {
+public class FileInfo extends BaseRowModel implements Comparable<FileInfo>, Serializable {
     @ExcelProperty
     private String fileName;
     private long timestamp;
@@ -21,40 +21,7 @@ public class FileInfo extends BaseRowModel implements Comparable, Serializable {
     private long size;
 
     @Override
-    public int compareTo(Object o) {
-        FileInfo o1 = (FileInfo) o;
-        return new Long(o1.getTimestamp() - timestamp).intValue();
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public long getSize() {
-        return size;
-    }
-
-    public void setSize(long size) {
-        this.size = size;
+    public int compareTo(FileInfo o) {
+        return Long.compare(o.getTimestamp(), timestamp);
     }
 }

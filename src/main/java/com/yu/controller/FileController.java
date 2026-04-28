@@ -79,6 +79,15 @@ public class FileController {
 
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /**
+     * 验证文件路径安全性，防止路径遍历攻击
+     */
+    private void validateFilePath(String fileName) {
+        if (fileName == null || fileName.contains("..") || fileName.contains("/") || fileName.contains("\\")) {
+            throw new ShareFileException("非法文件名");
+        }
+    }
+
     private void upload(MultipartFile file) {
 
         //判断剩余空间是否可以存储
@@ -96,10 +105,25 @@ public class FileController {
         try {
             // 保存到服务器中
             file.transferTo(new File(filePath, newFileName));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.error(String.format("上传文件失败，原名为%s,新名为%s", oldFileName, newFileName), e);
+            throw new ShareFileException("文件上传失败：" + e.getMessage());
         }
         LOGGER.info(String.format("开始上传文件原名为%s,新名为%s,上传成功！", oldFileName, newFileName));
+    }
+
+    /**
+     * 多文件上传前检查总空间（避免并发竞态）
+     */
+    private void validateTotalSpace(MultipartFile[] files) {
+        long totalNeed = 0;
+        for (MultipartFile file : files) {
+            totalNeed += DataSize.ofBytes(file.getSize()).toMegabytes();
+        }
+        long remainSpace = getRemainSpace(new File(filePath));
+        if (totalNeed > remainSpace) {
+            throw new ShareFileException("总上传空间不足，请联系管理员处理！");
+        }
     }
 
     /**
@@ -151,12 +175,17 @@ public class FileController {
     }
 
     private String dealFileName(String fileName) {
-        //超长处理
-        if (fileName.length() > 64) {
-            fileName = fileName.substring(0, 64);
+        // 获取后缀名（截断前先保存，避免截断丢失扩展名）
+        int lastDot = fileName.lastIndexOf(".");
+        String suffixName = lastDot > 0 ? fileName.substring(lastDot) : "";
+        String pureName = lastDot > 0 ? fileName.substring(0, lastDot) : fileName;
+
+        //超长处理（保留扩展名）
+        if (pureName.length() > 58) {
+            pureName = pureName.substring(0, 58);
         }
-        // 获取后缀名
-        String suffixName = fileName.substring(fileName.lastIndexOf("."));
+        fileName = pureName + suffixName;
+
         String uuid = UUID.randomUUID().toString().replaceAll("-", "");
         if (!isOpenComplexChar) {
             //如果关闭支持特殊字符后，文件包含特殊字符，则将文件名改为uuid
@@ -168,8 +197,6 @@ public class FileController {
         //重名处理
         File file = new File(filePath, fileName);
         if (file.exists()) {
-            // 获取文件名
-            String pureName = fileName.substring(0, fileName.lastIndexOf("."));
             fileName = pureName + "_" + uuid + suffixName;
         }
         return fileName;
@@ -190,6 +217,8 @@ public class FileController {
         if (files[0] == null || StringUtils.isEmpty(files[0].getOriginalFilename())) {
             throw new ShareFileException("你没有选择任何文件，请选择文件后再上传！");
         }
+        // 上传前预先检查总空间（避免并发竞态）
+        validateTotalSpace(files);
         stopWatch.start();
         try {
             for (MultipartFile file : files) {
@@ -222,6 +251,13 @@ public class FileController {
      */
     @PostMapping("/upload1")
     public String uploadUseThread(@RequestParam("files") MultipartFile[] files, Model model) throws InterruptedException {
+        if (!isOpenUpload) {
+            throw new ShareFileException("功能未开启，联系管理员开启此功能！");
+        }
+        if (files[0] == null || StringUtils.isEmpty(files[0].getOriginalFilename())) {
+            throw new ShareFileException("你没有选择任何文件，请选择文件后再上传！");
+        }
+        validateTotalSpace(files);
         stopWatch.start();
         CountDownLatch countDownLatch = new CountDownLatch(files.length);
         for (MultipartFile file : files) {
@@ -304,6 +340,7 @@ public class FileController {
         if (!isOpenDownload) {
             throw new ShareFileException("功能未开启，联系管理员开启此功能！");
         }
+        validateFilePath(fileName);
         LOGGER.info("开始下载文件: " + fileName);
         // 文件地址，真实环境是存放在数据库中的
         File file = new File(filePath, fileName);
@@ -312,22 +349,29 @@ public class FileController {
     }
 
     private void downloadFile(String fileName, HttpServletResponse response, File file) {
+        FileInputStream fis = null;
+        OutputStream os = null;
         try {
-            // 穿件输入对象
-            FileInputStream fis = new FileInputStream(file);
+            // 创建输入对象
+            fis = new FileInputStream(file);
             // 设置相关格式
-            //response.setContentType("application/force-download");
             response.setContentType("application/octet-stream");
             // 设置下载后的文件名以及header
             response.addHeader("Content-Disposition",
                     "attachment;fileName=" + new String(fileName.getBytes("UTF-8"), "iso-8859-1"));
             // 创建输出对象
-            OutputStream os = response.getOutputStream();
+            os = response.getOutputStream();
             // 常规操作
-
             FileCopyUtils.copy(fis, os);
         } catch (IOException e) {
             throw new ShareFileException(e.getMessage());
+        } finally {
+            try {
+                if (fis != null) fis.close();
+                if (os != null) os.close();
+            } catch (IOException e) {
+                LOGGER.warn("关闭流失败", e);
+            }
         }
     }
 
@@ -420,8 +464,9 @@ public class FileController {
      * @return
      */
     private double getSpaceUsageRate(File file) {
-        double v = Double.longBitsToDouble(getUsedSpace(file)) * 100 / Double.longBitsToDouble(maxSpace);
-        return Double.parseDouble(String.format("%.2f", v));
+        double used = getUsedSpace(file) * 100.0;
+        double max = maxSpace;
+        return Double.parseDouble(String.format("%.2f", used / max));
     }
 
 
@@ -446,6 +491,7 @@ public class FileController {
         if (!isOpenDelete) {
             throw new ShareFileException("功能未开启，联系管理员开启此功能！");
         }
+        validateFilePath(fileName);
         /**
          * java 流的close方法同system.gc方法只是告诉jvm，这里需要清理，但不一定立刻被清理，
          * 所以在上传完文件后，立刻删除文件会提示文件被占用
