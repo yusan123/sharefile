@@ -60,6 +60,9 @@ public class FileController {
     @Value("${file.isOpenDownloadAll:true}")
     private boolean isOpenDownloadAll;
 
+    @Value("${file.txt-preview-extensions:}")
+    private String txtPreviewExtensions;
+
     //如果不配置默认1G
     @Value("${file.maxSpace:1024}")
     private long maxSpace;
@@ -385,6 +388,12 @@ public class FileController {
      */
     private String getContentType(String fileName) {
         String lowerName = fileName.toLowerCase();
+        String extension = lowerName.substring(lowerName.lastIndexOf(".") + 1);
+        
+        if (isTxtPreviewExtension(extension)) {
+            return "text/plain;charset=UTF-8";
+        }
+        
         if (lowerName.endsWith(".pdf")) {
             return "application/pdf";
         } else if (lowerName.endsWith(".png") || lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg") ||
@@ -400,6 +409,19 @@ public class FileController {
             return "audio/" + lowerName.substring(lowerName.lastIndexOf(".") + 1);
         }
         return "application/octet-stream";
+    }
+    
+    private boolean isTxtPreviewExtension(String extension) {
+        if (StringUtils.isEmpty(txtPreviewExtensions)) {
+            return false;
+        }
+        String[] extensions = txtPreviewExtensions.split(",");
+        for (String ext : extensions) {
+            if (extension.equalsIgnoreCase(ext.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void downloadFile(String fileName, HttpServletResponse response, File file) {
@@ -472,6 +494,7 @@ public class FileController {
         model.addAttribute("isOpenDownload", isOpenDownload);
         model.addAttribute("isOpenDownloadAll", isOpenDownloadAll);
         model.addAttribute("isOpenUpload", isOpenUpload);
+        model.addAttribute("txtPreviewExtensions", txtPreviewExtensions);
         return viewName;
     }
 

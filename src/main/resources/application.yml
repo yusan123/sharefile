@@ -43,6 +43,7 @@ file:
   isOpenUpload: true     #是否开启上传
   isOpenDownload: true  #是否开启下载
   isOpenDownloadAll: true #是否开启下载所有文件
+  txt-preview-extensions: sql,log,csv,properties,yaml,yml #需要以txt格式预览的文件扩展名，多个用逗号分隔
 
 sa:
   name: root

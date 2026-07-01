@@ -2021,8 +2021,19 @@
                 'md': 'Markdown', 'json': 'JSON 数据', 'xml': 'XML 文档',
                 'html': 'HTML 页面', 'css': 'CSS 样式', 'js': 'JavaScript',
                 'mp4': 'MP4 视频', 'webm': 'WebM 视频', 'ogg': 'OGG 音视频',
-                'mp3': 'MP3 音频', 'wav': 'WAV 音频'
+                'mp3': 'MP3 音频', 'wav': 'WAV 音频',
+                'sql': 'SQL 脚本', 'csv': 'CSV 数据',
+                'properties': 'Properties 配置', 'yaml': 'YAML 配置', 'yml': 'YAML 配置'
             };
+            
+            // Get txt preview extensions from backend configuration
+            const txtPreviewExtensions = "[[${txtPreviewExtensions}]]".split(',').map(e => e.trim()).filter(e => e);
+            
+            // Default text extensions
+            const defaultTextExtensions = ['txt', 'log', 'md', 'json', 'xml', 'html', 'css', 'js'];
+            
+            // Combined text extensions (default + configured)
+            const textExtensions = [...new Set([...defaultTextExtensions, ...txtPreviewExtensions])];
 
             // Click on filename to preview
             const fileNameElements = document.querySelectorAll('.file-name-text');
@@ -2062,7 +2073,7 @@
                     previewContent.innerHTML = '<div class="preview-content-wrapper"><img src="' + previewUrl + '" class="preview-image" alt="' + fileName + '"></div>';
                 }
                 // For text-based files
-                else if (['txt', 'log', 'md', 'json', 'xml', 'html', 'css', 'js'].includes(ext)) {
+                else if (textExtensions.includes(ext)) {
                     fetch(previewUrl)
                         .then(function(response) { return response.text(); })
                         .then(function(text) {
