@@ -22,6 +22,10 @@ public class FileInfo extends BaseRowModel implements Comparable<FileInfo>, Seri
 
     @Override
     public int compareTo(FileInfo o) {
-        return Long.compare(o.getTimestamp(), timestamp);
+        int result = Long.compare(o.getTimestamp(), timestamp);
+        if (result == 0) {
+            return fileName.compareTo(o.getFileName());
+        }
+        return result;
     }
 }
