@@ -2013,18 +2013,7 @@
             const previewDownloadBtn = document.getElementById('previewDownload');
             let currentPreviewFile = '';
 
-            // File type mapping
-            const fileTypeMap = {
-                'png': 'PNG 图片', 'jpg': 'JPEG 图片', 'jpeg': 'JPEG 图片',
-                'gif': 'GIF 图片', 'bmp': 'BMP 图片', 'webp': 'WebP 图片',
-                'pdf': 'PDF 文档', 'txt': '文本文件', 'log': '日志文件',
-                'md': 'Markdown', 'json': 'JSON 数据', 'xml': 'XML 文档',
-                'html': 'HTML 页面', 'css': 'CSS 样式', 'js': 'JavaScript',
-                'mp4': 'MP4 视频', 'webm': 'WebM 视频', 'ogg': 'OGG 音视频',
-                'mp3': 'MP3 音频', 'wav': 'WAV 音频',
-                'sql': 'SQL 脚本', 'csv': 'CSV 数据',
-                'properties': 'Properties 配置', 'yaml': 'YAML 配置', 'yml': 'YAML 配置'
-            };
+            
             
             // Get txt preview extensions from backend configuration
             const txtPreviewExtensions = "[[${txtPreviewExtensions}]]".split(',').map(e => e.trim()).filter(e => e);
@@ -2061,7 +2050,7 @@
                 currentPreviewFile = fileName;
                 const ext = fileName.split('.').pop().toLowerCase();
                 previewFileName.textContent = fileName;
-                previewFileType.textContent = fileTypeMap[ext] || '未知文件';
+                previewFileType.textContent = ext.toUpperCase();
                 previewContent.innerHTML = '<div class="preview-loading"><div class="loading"></div><p>正在加载文件...</p></div>';
                 previewModal.style.display = 'block';
 
